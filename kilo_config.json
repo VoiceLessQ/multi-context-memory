@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "mcm-mcpglobal": {
+    "multi-context-memory-mcp": {
       "command": "docker",
       "args": [
         "exec",
@@ -20,8 +20,8 @@
     }
   },
   "mcpClients": {
-    "mcm-mcpglobal": {
-      "server": "mcm-mcpglobal",
+    "multi-context-memory-mcp": {
+      "server": "multi-context-memory-mcp",
       "capabilities": {
         "resources": [
           "memory://*",
@@ -48,11 +48,11 @@
     }
   },
   "settings": {
-    "mcm-mcpglobal": {
+    "multi-context-memory-mcp": {
       "autoConnect": true,
       "defaultContext": "general",
       "maxResults": 10,
-      "enableSemanticSearch": false,
+      "enableSemanticSearch": true,
       "defaultTags": ["kilo", "memory-system"],
       "logLevel": "INFO",
       "containerName": "mcp-memory-system"
