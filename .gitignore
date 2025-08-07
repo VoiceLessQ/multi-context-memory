@@ -1,0 +1,92 @@
+# MCP Multi-Context Memory Server - .gitignore
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.Python
+
+# === Virtual Environment ===
+.env
+.venv
+env/
+venv/
+ENV/
+
+# === Environment Variables ===
+.env.local
+.env.production
+.env.staging
+.env.development
+
+# === Database Files ===
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+memory.db*
+
+# === Logs ===
+*.log
+logs/
+
+# === Testing ===
+.coverage
+htmlcov/
+.pytest_cache/
+.hypothesis/
+
+# === Docker ===
+docker-compose.override.yml
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Temporary Files ===
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# === Archive (cleanup files) ===
+archive/
+
+# === Empty/Unused Directories ===
+config/
+
+# === Data Files ===
+data/jsonl/
+*.jsonl
+
+# === Cache ===
+.cache/
+
+# === Node.js (if any dev tools) ===
+node_modules/
+npm-debug.log*
+
+# === Diagnostic Files ===
+check_*.py
+debug_*.py
+test_diagnostic_*.py
+diagnostic_*.log
+
+# === Temporary Analysis Files ===
+*_ANALYSIS_TEMP.md
+*_DEBUG_TEMP.md
+temp_analysis/

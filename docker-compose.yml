@@ -1,0 +1,1522 @@
+version: '3.8'
+
+services:
+  # Main MCP Memory System Service
+  mcp-memory:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-system
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - mcp_data:/app/data
+      - mcp_logs:/app/logs
+      - mcp_backups:/app/backups
+      - mcp_vectors:/app/vectors
+      - mcp_whoosh_index:/app/whoosh_index
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - DATABASE_URL=sqlite:///./data/memory.db
+      - JSONL_STORAGE_PATH=./data/jsonl
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=INFO
+      - LOG_FILE=/app/logs/memory_system.log
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development Service
+  mcp-memory-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-system-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - mcp_data_dev:/app/data
+      - mcp_logs_dev:/app/logs
+      - mcp_backups_dev:/app/backups
+      - mcp_vectors_dev:/app/vectors
+      - mcp_whoosh_index_dev:/app/whoosh_index
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - DATABASE_URL=sqlite:///./data/memory.db
+      - JSONL_STORAGE_PATH=./data/jsonl
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=DEBUG
+      - LOG_FILE=/app/logs/memory_system.log
+    depends_on:
+      - redis-dev
+      - postgres-dev
+    networks:
+      - mcp-network-dev
+    profiles:
+      - dev
+
+  # Testing Service
+  mcp-memory-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-system-test
+    restart: no
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - mcp_data_test:/app/data
+      - mcp_logs_test:/app/logs
+      - mcp_backups_test:/app/backups
+      - mcp_vectors_test:/app/vectors
+      - mcp_whoosh_index_test:/app/whoosh_index
+    environment:
+      - ENVIRONMENT=test
+      - DEBUG=false
+      - DATABASE_URL=sqlite:///./data/test_memory.db
+      - JSONL_STORAGE_PATH=./data/test_jsonl
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=DEBUG
+      - LOG_FILE=/app/logs/test_memory_system.log
+    depends_on:
+      - redis-test
+      - postgres-test
+    networks:
+      - mcp-network-test
+    profiles:
+      - test
+
+  # Production Service with Horizontal Scaling
+  mcp-memory-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-system-prod
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - mcp_data_prod:/app/data
+      - mcp_logs_prod:/app/logs
+      - mcp_backups_prod:/app/backups
+      - mcp_vectors_prod:/app/vectors
+      - mcp_whoosh_index_prod:/app/whoosh_index
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/mcp_memory
+      - JSONL_STORAGE_PATH=./data/jsonl
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=INFO
+      - LOG_FILE=/app/logs/memory_system.log
+      - WORKERS=4
+      - WORKER_CLASS=uvicorn.workers.UvicornWorker
+      - GRACEFUL_SHUTDOWN_TIMEOUT=30
+    depends_on:
+      - postgres-prod
+      - redis-prod
+    networks:
+      - mcp-network-prod
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    profiles:
+      - prod
+
+  # Database Services
+  postgres:
+    image: postgres:15-alpine
+    container_name: mcp-memory-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_DB=mcp_memory
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres_password
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: mcp-memory-postgres-dev
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_DB=mcp_memory_dev
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres_password_dev
+    networks:
+      - mcp-network-dev
+    profiles:
+      - dev
+
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: mcp-memory-postgres-test
+    restart: no
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data_test:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_DB=mcp_memory_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres_password_test
+    networks:
+      - mcp-network-test
+    profiles:
+      - test
+
+  postgres-prod:
+    image: postgres:15-alpine
+    container_name: mcp-memory-postgres-prod
+    restart: unless-stopped
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backups:/backups
+    environment:
+      - POSTGRES_DB=mcp_memory_prod
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    profiles:
+      - prod
+
+  # Redis Services
+  redis:
+    image: redis:7-alpine
+    container_name: mcp-memory-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  redis-dev:
+    image: redis:7-alpine
+    container_name: mcp-memory-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data_dev:/data
+    command: redis-server --appendonly yes
+    networks:
+      - mcp-network-dev
+    profiles:
+      - dev
+
+  redis-test:
+    image: redis:7-alpine
+    container_name: mcp-memory-redis-test
+    restart: no
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data_test:/data
+    command: redis-server --appendonly yes
+    networks:
+      - mcp-network-test
+    profiles:
+      - test
+
+  redis-prod:
+    image: redis:7-alpine
+    container_name: mcp-memory-redis-prod
+    restart: unless-stopped
+    ports:
+      - "6382:6379"
+    volumes:
+      - redis_data_prod:/data
+    command: redis-server --appendonly yes
+    networks:
+      - mcp-network-prod
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    profiles:
+      - prod
+
+  # Vector Database Services
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: mcp-memory-chroma
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - mcp-network
+    environment:
+      - ALLOW_RESET=TRUE
+    profiles:
+      - vector-db
+
+  pinecone:
+    image: pinecone/pinecone-index:latest
+    container_name: mcp-memory-pinecone
+    restart: unless-stopped
+    ports:
+      - "8002:8000"
+    networks:
+      - mcp-network
+    environment:
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT}
+    profiles:
+      - vector-db
+
+  weaviate:
+    image: semitechnologies/weaviate:latest
+    container_name: mcp-memory-weaviate
+    restart: unless-stopped
+    ports:
+      - "8003:8080"
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    networks:
+      - mcp-network
+    environment:
+      - QUERY_DEFAULTS_LIMIT=25
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=text2vec-transformers
+      - ENABLE_MODULES=text2vec-transformers,ref2vec-centroid,qa-openai,question-generation
+      - TRANSFORMERS_INFERENCE_API=http://transformers:8080
+    profiles:
+      - vector-db
+
+  # Monitoring and Logging Services
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mcp-memory-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - mcp-network
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mcp-memory-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - mcp-network
+    profiles:
+      - monitoring
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: mcp-memory-elasticsearch
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    networks:
+      - mcp-network
+    profiles:
+      - logging
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: mcp-memory-kibana
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    volumes:
+      - kibana_data:/usr/share/kibana/data
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - mcp-network
+    profiles:
+      - logging
+
+  # CI/CD Services
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: mcp-memory-jenkins
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - mcp-network
+    profiles:
+      - ci-cd
+
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: mcp-memory-gitlab
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+      - "8443:443"
+      - "8022:22"
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+    networks:
+      - mcp-network
+    profiles:
+      - ci-cd
+
+  # Documentation Service
+  mkdocs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-mkdocs
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./docs:/app/docs
+      - ./site:/app/site
+    networks:
+      - mcp-network
+    profiles:
+      - docs
+
+  # Backup Service
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-backup
+    restart: unless-stopped
+    volumes:
+      - backup_data:/app/backups
+      - ./backups:/app/backups
+    environment:
+      - BACKUP_ENABLED=true
+      - BACKUP_PATH=/app/backups
+      - BACKUP_INTERVAL=86400
+      - BACKUP_RETENTION_DAYS=30
+    networks:
+      - mcp-network
+    profiles:
+      - backup
+
+  # Migration Service
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-migration
+    restart: no
+    volumes:
+      - ./data:/app/data
+      - ./migrations:/app/migrations
+    environment:
+      - MIGRATION_ENABLED=true
+      - MIGRATION_AUTO_MIGRATE=false
+      - MIGRATION_BACKUP_BEFORE_MIGRATE=true
+      - MIGRATION_VALIDATE_AFTER_MIGRATE=true
+    networks:
+      - mcp-network
+    profiles:
+      - migration
+
+  # Security Scanning Service
+  security:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-security
+    restart: no
+    volumes:
+      - .:/app
+      - security_reports:/app/reports
+    environment:
+      - SECURITY_ENABLED=true
+      - SECURITY_VALIDATE_TOKENS=true
+      - SECURITY_RATE_LIMIT=true
+      - SECURITY_CORS=true
+    networks:
+      - mcp-network
+    profiles:
+      - security
+
+  # Performance Testing Service
+  performance:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-performance
+    restart: no
+    volumes:
+      - .:/app
+      - performance_results:/app/results
+    environment:
+      - PERFORMANCE_ENABLED=true
+      - PERFORMANCE_LOG_INTERVAL=3600
+      - PERFORMANCE_METRICS=["response_time", "memory_usage", "cpu_usage", "db_queries"]
+    networks:
+      - mcp-network
+    profiles:
+      - performance
+
+  # Analytics Service
+  analytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-analytics
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+      - analytics_data:/app/data
+    environment:
+      - ANALYTICS_ENABLED=true
+      - DATABASE_URL=sqlite:///./data/analytics_memory.db
+      - JSONL_STORAGE_PATH=./data/analytics_jsonl
+    networks:
+      - mcp-network
+    profiles:
+      - analytics
+
+  # ML Service
+  ml:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 2.0.0
+    container_name: mcp-memory-ml
+    restart: unless-stopped
+    ports:
+      - "8889:8888"
+    volumes:
+      - .:/app
+      - ml_data:/app/data
+      - ml_models:/app/models
+    environment:
+      - ML_ENABLED=true
+      - DATABASE_URL=sqlite:///./data/ml_memory.db
+      - JSONL_STORAGE_PATH=./data/ml_jsonl
+      - TRANSFORMERS_MODEL=sentence-transformers/all-MiniLM-L6-v2
+    networks:
+      - mcp-network
+    profiles:
+      - ml
+
+  # Load Balancer (for production)
+  nginx:
+    image: nginx:alpine
+    container_name: mcp-memory-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - mcp-memory-prod
+    networks:
+      - mcp-network-prod
+    profiles:
+      - prod
+
+  # Monitoring Agent
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: mcp-memory-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - mcp-network
+    profiles:
+      - monitoring
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: mcp-memory-cadvisor
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    networks:
+      - mcp-network
+    profiles:
+      - monitoring
+
+  # Logging Agent
+  fluentd:
+    build:
+      context: ./logging/fluentd
+      dockerfile: Dockerfile
+    container_name: mcp-memory-fluentd
+    restart: unless-stopped
+    volumes:
+      - ./logging/fluentd/conf:/fluentd/etc
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - mcp-network
+    profiles:
+      - logging
+
+  # Distributed Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: mcp-memory-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    networks:
+      - mcp-network
+    profiles:
+      - tracing
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: mcp-memory-zipkin
+    restart: unless-stopped
+    ports:
+      - "9411:9411"
+    networks:
+      - mcp-network
+    profiles:
+      - tracing
+
+  # Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: mcp-memory-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    networks:
+      - mcp-network
+    profiles:
+      - messaging
+
+  # Cache Service
+  memcached:
+    image: memcached:latest
+    container_name: mcp-memory-memcached
+    restart: unless-stopped
+    ports:
+      - "11211:11211"
+    networks:
+      - mcp-network
+    profiles:
+      - cache
+
+  # Search Service
+  solr:
+    image: solr:8.11
+    container_name: mcp-memory-solr
+    restart: unless-stopped
+    ports:
+      - "8983:8983"
+    volumes:
+      - solr_data:/var/solr
+    networks:
+      - mcp-network
+    profiles:
+      - search
+
+  # Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: mcp-memory-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    networks:
+      - mcp-network
+    profiles:
+      - storage
+
+  # API Gateway
+  kong:
+    image: kong:latest
+    container_name: mcp-memory-kong
+    restart: unless-stopped
+    ports:
+      - "8002:8000"
+      - "8443:8443"
+      - "8003:8001"
+      - "8444:8444"
+    environment:
+      - KONG_DATABASE=off
+      - KONG_DECLARATIVE_CONFIG=/kong/declarative/kong.yml
+    volumes:
+      - ./kong/declarative:/kong/declarative
+    networks:
+      - mcp-network
+    profiles:
+      - gateway
+
+  # Service Mesh
+  istio-pilot:
+    image: docker.io/istio/pilot:latest
+    container_name: mcp-memory-istio-pilot
+    restart: unless-stopped
+    ports:
+      - "15007:15007"
+      - "15008:15008"
+      - "15010:15010"
+      - "15011:15011"
+      - "15014:15014"
+    networks:
+      - mcp-network
+    profiles:
+      - service-mesh
+
+  istio-proxy:
+    image: docker.io/istio/proxyv2:latest
+    container_name: mcp-memory-istio-proxy
+    restart: unless-stopped
+    ports:
+      - "15090:15090"
+    networks:
+      - mcp-network
+    profiles:
+      - service-mesh
+
+  # Chaos Engineering
+  chaos-mesh:
+    image: chaos-mesh/chaos-mesh:latest
+    container_name: mcp-memory-chaos-mesh
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+      - "31767:31767"
+      - "31768:31768"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - mcp-network
+    profiles:
+      - chaos-engineering
+
+  # Secret Management
+  vault:
+    image: vault:latest
+    container_name: mcp-memory-vault
+    restart: unless-stopped
+    ports:
+      - "8200:8200"
+    volumes:
+      - vault_data:/vault/file
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+    networks:
+      - mcp-network
+    profiles:
+      - secrets
+
+  # Configuration Management
+  consul:
+    image: consul:latest
+    container_name: mcp-memory-consul
+    restart: unless-stopped
+    ports:
+      - "8500:8500"
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - mcp-network
+    profiles:
+      - config
+
+  # Distributed Locking
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.0
+    container_name: mcp-memory-etcd
+    restart: unless-stopped
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    volumes:
+      - etcd_data:/etcd
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+    networks:
+      - mcp-network
+    profiles:
+      - locking
+
+  # Event Sourcing
+  eventstore:
+    image: eventstore/eventstore:latest
+    container_name: mcp-memory-eventstore
+    restart: unless-stopped
+    ports:
+      - "2113:2113"
+      - "1113:1113"
+    volumes:
+      - eventstore_data:/var/lib/eventstore
+    networks:
+      - mcp-network
+    profiles:
+      - event-sourcing
+
+  # CQRS
+  mediatr:
+    image: mediatr/mediatr:latest
+    container_name: mcp-memory-mediatr
+    restart: unless-stopped
+    ports:
+      - "8084:8080"
+    networks:
+      - mcp-network
+    profiles:
+      - cqrs
+
+  # Saga Pattern
+  saga-coordinator:
+    image: saga-pattern/saga-coordinator:latest
+    container_name: mcp-memory-saga
+    restart: unless-stopped
+    ports:
+      - "8085:8080"
+    networks:
+      - mcp-network
+    profiles:
+      - saga
+
+  # Event Streaming
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: mcp-memory-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    networks:
+      - mcp-network
+    profiles:
+      - event-streaming
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: mcp-memory-zookeeper
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    networks:
+      - mcp-network
+    profiles:
+      - event-streaming
+
+  # GraphQL API
+  graphql-engine:
+    image: hasura/graphql-engine:v2.25.0
+    container_name: mcp-memory-graphql
+    restart: unless-stopped
+    ports:
+      - "8086:8080"
+    volumes:
+      - graphql_metadata:/hasura/metadata
+    environment:
+      - HASURA_GRAPHQL_DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/mcp_memory
+      - HASURA_GRAPHQL_ENABLE_CONSOLE=true
+      - HASURA_GRAPHQL_ADMIN_SECRET=hasura_admin_secret
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  graphql-yoga:
+    image: enisdenjo/graphql-yoga:latest
+    container_name: mcp-memory-graphql-yoga
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  apollo-server:
+    image: apollo/server:latest
+    container_name: mcp-memory-apollo-server
+    restart: unless-stopped
+    ports:
+      - "4001:4000"
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  dgraph:
+    image: dgraph/dgraph:latest
+    container_name: mcp-memory-dgraph
+    restart: unless-stopped
+    ports:
+      - "8088:8080"
+      - "9080:9080"
+    volumes:
+      - dgraph_data:/dgraph
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  neo4j:
+    image: neo4j:latest
+    container_name: mcp-memory-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PLUGINS=["apoc"]
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  arangodb:
+    image: arangodb:latest
+    container_name: mcp-memory-arangodb
+    restart: unless-stopped
+    ports:
+      - "8529:8529"
+    volumes:
+      - arangodb_data:/var/lib/arangodb3
+    environment:
+      - ARANGO_ROOT_PASSWORD=password
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  orientdb:
+    image: orientdb:latest
+    container_name: mcp-memory-orientdb
+    restart: unless-stopped
+    ports:
+      - "2480:2480"
+      - "2424:2424"
+    volumes:
+      - orientdb_data:/orientdb
+    environment:
+      - ORIENTDB_ROOT_PASSWORD=password
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  couchbase:
+    image: couchbase/server:latest
+    container_name: mcp-memory-couchbase
+    restart: unless-stopped
+    ports:
+      - "8091:8091"
+      - "8092:8092"
+      - "8093:8093"
+      - "11210:11210"
+    volumes:
+      - couchbase_data:/opt/couchbase/var/lib/couchbase/data
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  couchdb:
+    image: couchdb:latest
+    container_name: mcp-memory-couchdb
+    restart: unless-stopped
+    ports:
+      - "5984:5984"
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  rethinkdb:
+    image: rethinkdb:latest
+    container_name: mcp-memory-rethinkdb
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "28015:28015"
+      - "29015:29015"
+    volumes:
+      - rethinkdb_data:/data
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  faunadb:
+    image: fauna/faunadb:latest
+    container_name: mcp-memory-faunadb
+    restart: unless-stopped
+    ports:
+      - "8443:8443"
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  supabase:
+    image: supabase/postgres:latest
+    container_name: mcp-memory-supabase
+    restart: unless-stopped
+    ports:
+      - "54321:5432"
+    volumes:
+      - supabase_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres_password
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  planet-scale:
+    image: planetscale/pscale:latest
+    container_name: mcp-memory-planet-scale
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - planet_scale_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  neon:
+    image: neon/neondb:latest
+    container_name: mcp-memory-neon
+    restart: unless-stopped
+    ports:
+      - "54322:5432"
+    volumes:
+      - neon_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=postgres_password
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  vercel:
+    image: vercel/next:latest
+    container_name: mcp-memory-vercel
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - vercel_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  netlify:
+    image: netlify/netlify-cms:latest
+    container_name: mcp-memory-netlify
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    volumes:
+      - netlify_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  amplify:
+    image: aws/amplify:latest
+    container_name: mcp-memory-amplify
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    volumes:
+      - amplify_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  firebase:
+    image: firebase/firebase-tools:latest
+    container_name: mcp-memory-firebase
+    restart: unless-stopped
+    ports:
+      - "3003:3000"
+    volumes:
+      - firebase_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  heroku:
+    image: heroku/heroku:latest
+    container_name: mcp-memory-heroku
+    restart: unless-stopped
+    ports:
+      - "3004:3000"
+    volumes:
+      - heroku_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  digitalocean:
+    image: digitalocean/droplet:latest
+    container_name: mcp-memory-digitalocean
+    restart: unless-stopped
+    ports:
+      - "3005:3000"
+    volumes:
+      - digitalocean_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  linode:
+    image: linode/linode-cli:latest
+    container_name: mcp-memory-linode
+    restart: unless-stopped
+    ports:
+      - "3006:3000"
+    volumes:
+      - linode_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  vultr:
+    image: vultr/vultr-cli:latest
+    container_name: mcp-memory-vultr
+    restart: unless-stopped
+    ports:
+      - "3007:3000"
+    volumes:
+      - vultr_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  aws:
+    image: aws/aws-cli:latest
+    container_name: mcp-memory-aws
+    restart: unless-stopped
+    ports:
+      - "3008:3000"
+    volumes:
+      - aws_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  azure:
+    image: azure/azure-cli:latest
+    container_name: mcp-memory-azure
+    restart: unless-stopped
+    ports:
+      - "3009:3000"
+    volumes:
+      - azure_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  gcp:
+    image: google/cloud-sdk:latest
+    container_name: mcp-memory-gcp
+    restart: unless-stopped
+    ports:
+      - "3010:3000"
+    volumes:
+      - gcp_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  ibm:
+    image: ibmcloud/ibmcloud:latest
+    container_name: mcp-memory-ibm
+    restart: unless-stopped
+    ports:
+      - "3011:3000"
+    volumes:
+      - ibm_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  oracle:
+    image: oracle/database:latest
+    container_name: mcp-memory-oracle
+    restart: unless-stopped
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+    environment:
+      - ORACLE_PWD=oracle_password
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  snowflake:
+    image: snowflakedb/snowflake-cli:latest
+    container_name: mcp-memory-snowflake
+    restart: unless-stopped
+    ports:
+      - "3012:3000"
+    volumes:
+      - snowflake_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+  # GraphQL API
+  databricks:
+    image: databricks/databricks-cli:latest
+    container_name: mcp-memory-databricks
+    restart: unless-stopped
+    ports:
+      - "3013:3000"
+    volumes:
+      - databricks_data:/app
+    networks:
+      - mcp-network
+    profiles:
+      - graphql
+
+volumes:
+  # MCP Memory System Volumes
+  mcp_data:
+  mcp_logs:
+  mcp_backups:
+  mcp_vectors:
+  mcp_whoosh_index:
+  
+  mcp_data_dev:
+  mcp_logs_dev:
+  mcp_backups_dev:
+  mcp_vectors_dev:
+  mcp_whoosh_index_dev:
+  
+  mcp_data_test:
+  mcp_logs_test:
+  mcp_backups_test:
+  mcp_vectors_test:
+  mcp_whoosh_index_test:
+  
+  mcp_data_prod:
+  mcp_logs_prod:
+  mcp_backups_prod:
+  mcp_vectors_prod:
+  mcp_whoosh_index_prod:
+
+  # Database Volumes
+  postgres_data:
+  postgres_data_dev:
+  postgres_data_test:
+  postgres_data_prod:
+
+  # Redis Volumes
+  redis_data:
+  redis_data_dev:
+  redis_data_test:
+  redis_data_prod:
+
+  # Vector Database Volumes
+  chroma_data:
+  pinecone_data:
+  weaviate_data:
+
+  # Monitoring and Logging Volumes
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
+  kibana_data:
+
+  # CI/CD Volumes
+  jenkins_home:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:
+
+  # Backup and Migration Volumes
+  backup_data:
+  security_reports:
+  performance_results:
+  analytics_data:
+  ml_data:
+  ml_models:
+
+  # Infrastructure Volumes
+  rabbitmq_data:
+  memcached_data:
+  solr_data:
+  minio_data:
+  kong_data:
+  istio_data:
+  chaos_mesh_data:
+  vault_data:
+  consul_data:
+  etcd_data:
+  eventstore_data:
+  kafka_data:
+  zookeeper_data:
+  graphql_metadata:
+  dgraph_data:
+  neo4j_data:
+  arangodb_data:
+  orientdb_data:
+  couchbase_data:
+  couchdb_data:
+  rethinkdb_data:
+  faunadb_data:
+  supabase_data:
+  planet_scale_data:
+  neon_data:
+  vercel_data:
+  netlify_data:
+  amplify_data:
+  firebase_data:
+  heroku_data:
+  digitalocean_data:
+  linode_data:
+  vultr_data:
+  aws_data:
+  azure_data:
+  gcp_data:
+  ibm_data:
+  oracle_data:
+  snowflake_data:
+  databricks_data:
+
+networks:
+  mcp-network:
+    driver: bridge
+  mcp-network-dev:
+    driver: bridge
+  mcp-network-test:
+    driver: bridge
+  mcp-network-prod:
+    driver: bridge
