@@ -5,7 +5,7 @@ from datetime import datetime
 class ContextBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = None
-    access_level: str = Field(default="user", regex="^(public|user|privileged|admin)$")
+    access_level: str = Field(default="user", pattern="^(public|user|privileged|admin)$")
     context_metadata: Optional[Dict[str, Any]] = None
 
 class ContextCreate(ContextBase):
@@ -16,7 +16,7 @@ class ContextUpdate(BaseModel):
     """Schema for updating an existing context"""
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = None
-    access_level: Optional[str] = Field(None, regex="^(public|user|privileged|admin)$")
+    access_level: Optional[str] = Field(None, pattern="^(public|user|privileged|admin)$")
     context_metadata: Optional[Dict[str, Any]] = None
     is_active: Optional[bool] = None
 

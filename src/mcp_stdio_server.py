@@ -126,24 +126,55 @@ class MCPStdioServer:
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        cursor.execute("SELECT id, title, content FROM memories")
-        memories = cursor.fetchall()
+        cursor.execute("SELECT COUNT(*) FROM memories")
+        memory_count = cursor.fetchone()[0]
         
-        for memory_id, title, content in memories:
-            description = content[:100] + "..." if len(content) > 100 else content
-            resources.append({
-                "uri": f"memory://{memory_id}",
-                "name": title,
-                "description": description,
-                "mimeType": "application/json"
-            })
+        resources.append({
+            "uri": "memory://summary",
+            "name": f"Resources ({memory_count})",
+            "description": f"Total number of memories stored in the system: {memory_count}.",
+            "mimeType": "application/json"
+        })
         
         conn.close()
         return {"resources": resources}
 
     async def handle_read_resource(self, uri: str) -> Dict:
         """Handle read resource request"""
-        if uri.startswith("memory://"):
+        if uri == "memory://summary":
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # Get total memory count
+            cursor.execute("SELECT COUNT(*) FROM memories")
+            total_memories = cursor.fetchone()[0]
+            
+            # Get counts by category if available
+            cursor.execute("SELECT category, COUNT(*) FROM memories GROUP BY category")
+            category_counts = cursor.fetchall()
+            
+            # Get oldest and newest memory dates
+            cursor.execute("SELECT MIN(created_at), MAX(created_at) FROM memories")
+            date_range = cursor.fetchone()
+            
+            summary_data = {
+                "total_memories": total_memories,
+                "category_breakdown": {cat: count for cat, count in category_counts} if category_counts else {},
+                "oldest_memory_date": date_range[0],
+                "newest_memory_date": date_range[1]
+            }
+            
+            conn.close()
+            
+            return {
+                "contents": [{
+                    "uri": uri,
+                    "mimeType": "application/json",
+                    "text": json.dumps(summary_data, indent=2)
+                }]
+            }
+        elif uri.startswith("memory://"):
+            # Existing logic for individual memory resources
             memory_id = int(uri.split("://")[1])
             
             conn = get_db_connection()

@@ -33,17 +33,49 @@ async def root():
         "status": "running"
     }
 
-# Add routes gradually as they work
+# Add routes individually with better error handling
+loaded_routes = []
+
+# Try to load memory routes first (most important)
 try:
-    from src.api.routes import auth, memory, context, relation
-    app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+    from src.api.routes import memory
     app.include_router(memory.router, prefix="/api/memory", tags=["memory"])
-    app.include_router(context.router, prefix="/api/context", tags=["context"])
-    app.include_router(relation.router, prefix="/api/relation", tags=["relation"])
-    logger.info("All routes loaded successfully")
+    loaded_routes.append("memory")
+    logger.info("Memory routes loaded successfully")
 except ImportError as e:
-    logger.warning(f"Could not load some routes: {e}")
-    logger.info("Running in minimal mode")
+    logger.warning(f"Could not load memory routes: {e}")
+
+# Try to load auth routes
+try:
+    from src.api.routes import auth
+    app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+    loaded_routes.append("auth")
+    logger.info("Auth routes loaded successfully")
+except ImportError as e:
+    logger.warning(f"Could not load auth routes: {e}")
+
+# Try to load context routes
+try:
+    from src.api.routes import context
+    app.include_router(context.router, prefix="/api/context", tags=["context"])
+    loaded_routes.append("context")
+    logger.info("Context routes loaded successfully")
+except ImportError as e:
+    logger.warning(f"Could not load context routes: {e}")
+
+# Try to load relation routes
+try:
+    from src.api.routes import relation
+    app.include_router(relation.router, prefix="/api/relation", tags=["relation"])
+    loaded_routes.append("relation")
+    logger.info("Relation routes loaded successfully")
+except ImportError as e:
+    logger.warning(f"Could not load relation routes: {e}")
+
+if loaded_routes:
+    logger.info(f"Successfully loaded routes: {', '.join(loaded_routes)}")
+else:
+    logger.warning("No routes loaded - running in minimal mode")
 
 if __name__ == "__main__":
     import uvicorn

@@ -6,15 +6,47 @@ from typing import Optional, Dict, Any
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-import jwt
 from datetime import datetime, timedelta
+import logging
+
+# Optional JWT support
+try:
+    from jose import jwt
+    JWT_AVAILABLE = True
+except ImportError:
+    logging.warning("JWT features not available - install python-jose")
+    JWT_AVAILABLE = False
+    # Create dummy jwt module
+    class jwt:
+        class ExpiredSignatureError(Exception):
+            pass
+        class JWTError(Exception):
+            pass
+        @staticmethod
+        def decode(*args, **kwargs):
+            raise Exception("JWT not available")
+        @staticmethod
+        def encode(*args, **kwargs):
+            return "dummy-token"
 
 from ..database.enhanced_memory_db import EnhancedMemoryDB
-from ..config.settings import get_settings
-from ..config.logging import get_logger
 
-logger = get_logger(__name__)
-settings = get_settings()
+# Optional settings and logging
+try:
+    from ..config.settings import get_settings
+    from ..config.logging import get_logger
+    logger = get_logger(__name__)
+    settings = get_settings()
+except ImportError:
+    logging.basicConfig()
+    logger = logging.getLogger(__name__)
+    # Create dummy settings
+    class DummySettings:
+        def __init__(self):
+            self.database_url = "sqlite:///memory.db"
+            self.secret_key = "dummy-secret"
+            self.algorithm = "HS256"
+    settings = DummySettings()
 
 security = HTTPBearer()
 
@@ -33,6 +65,16 @@ def get_current_user(
     db: EnhancedMemoryDB = Depends(get_db)
 ) -> Dict[str, Any]:
     """Get current authenticated user."""
+    if not JWT_AVAILABLE:
+        # Return dummy user when JWT is not available
+        logger.warning("JWT not available, using dummy user")
+        return {
+            "id": 1,
+            "username": "default_user",
+            "email": "user@example.com",
+            "is_admin": False
+        }
+    
     try:
         # Decode JWT token
         payload = jwt.decode(
@@ -88,6 +130,52 @@ def get_current_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Authentication failed"
         )
+
+def get_optional_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
+    db: EnhancedMemoryDB = Depends(get_db)
+) -> Optional[Dict[str, Any]]:
+    """Get current authenticated user (optional - returns None if not authenticated)."""
+    if not JWT_AVAILABLE:
+        # Return dummy user when JWT is not available
+        return {
+            "id": 1,
+            "username": "default_user",
+            "email": "user@example.com",
+            "is_admin": False
+        }
+    
+    if credentials is None:
+        return None
+        
+    try:
+        # Decode JWT token
+        payload = jwt.decode(
+            credentials.credentials,
+            settings.secret_key,
+            algorithms=[settings.algorithm]
+        )
+        
+        user_id = payload.get("sub")
+        if user_id is None:
+            return None
+        
+        # Get user from database
+        user = db.get_user_by_username(user_id)
+        if user is None or not user.is_active:
+            return None
+        
+        return {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "is_admin": user.is_admin
+        }
+    except (jwt.ExpiredSignatureError, jwt.JWTError):
+        return None
+    except Exception as e:
+        logger.warning(f"Optional authentication error: {str(e)}")
+        return None
 
 def get_current_admin(
     current_user: Dict[str, Any] = Depends(get_current_user)

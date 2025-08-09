@@ -6,7 +6,7 @@ class MemoryBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     content: str = Field(..., min_length=1)
     context_id: Optional[int] = None
-    access_level: str = Field(default="user", regex="^(public|user|privileged|admin)$")
+    access_level: str = Field(default="user", pattern="^(public|user|privileged|admin)$")
     memory_metadata: Optional[Dict[str, Any]] = None
 
 class MemoryCreate(MemoryBase):
@@ -19,7 +19,7 @@ class MemoryUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     content: Optional[str] = Field(None, min_length=1)
     context_id: Optional[int] = None
-    access_level: Optional[str] = Field(None, regex="^(public|user|privileged|admin)$")
+    access_level: Optional[str] = Field(None, pattern="^(public|user|privileged|admin)$")
     memory_metadata: Optional[Dict[str, Any]] = None
 
 class MemoryResponse(MemoryBase):
@@ -62,6 +62,43 @@ class MemoryVersion(BaseModel):
     created_by: int
     change_description: Optional[str] = None
     version_metadata: Optional[Dict[str, Any]] = None
+    
+    class Config:
+        from_attributes = True
+
+class MemoryStats(BaseModel):
+    """Schema for memory statistics"""
+    total_memories: int = 0
+    total_relations: int = 0
+    total_contexts: int = 0
+    memory_by_access_level: Dict[str, int] = {}
+    recent_memories: int = 0
+    top_contexts: List[Dict[str, Any]] = []
+
+class MemorySearchResponse(BaseModel):
+    """Schema for memory search response"""
+    id: int
+    title: str
+    content: str
+    similarity: float
+    relation_count: int
+    context_id: Optional[int] = None
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class MemorySummary(BaseModel):
+    """Schema for memory summary request"""
+    max_length: int = Field(default=50, ge=10, le=500)
+    use_ai: bool = False
+
+class MemorySummaryResponse(BaseModel):
+    """Schema for memory summary response"""
+    memory_id: int
+    summary: str
+    generated_at: datetime
+    method: str  # "ai" or "extractive"
     
     class Config:
         from_attributes = True

@@ -26,6 +26,17 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
+class UserResponse(User):
+    """Schema for user response - alias for User"""
+    pass
+
+class UserStats(BaseModel):
+    """Schema for user statistics"""
+    total_users: int = 0
+    active_users: int = 0
+    admin_users: int = 0
+    recent_registrations: int = 0
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -49,3 +60,20 @@ class PasswordResetRequest(BaseModel):
 class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+class UserActivationRequest(BaseModel):
+    token: str
+
+class UserDeactivationRequest(BaseModel):
+    user_id: int
+    reason: Optional[str] = None
+
+class AuthStats(BaseModel):
+    """Schema for authentication statistics"""
+    total_logins: int = 0
+    failed_logins: int = 0
+    active_sessions: int = 0

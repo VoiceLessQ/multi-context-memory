@@ -13,10 +13,9 @@ from ...schemas.memory import (
     MemorySearch, MemorySearchResponse, MemorySummary, MemorySummaryResponse
 )
 from ...schemas.auth import TokenData
-from ...utils.auth import get_current_user, get_optional_user
+from ...api.dependencies import get_enhanced_db, get_current_user, get_optional_user
 from ...utils.error_handling import handle_errors
 from ...utils.text_processing import extract_keywords, generate_summary
-from ...utils.ai import ai_summarize_memory
 
 router = APIRouter()
 
