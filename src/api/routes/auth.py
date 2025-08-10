@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 
 from ...database.models import User
 from ...database.enhanced_memory_db import EnhancedMemoryDB
+from ...api.dependencies import get_enhanced_db
 from ...schemas.auth import (
     Token, TokenData, UserCreate, UserResponse, UserUpdate,
     UserStats, LoginRequest, RefreshTokenRequest, PasswordResetRequest,
@@ -555,7 +556,7 @@ async def get_user_stats(
 
 @router.post("/verify-email")
 async def verify_email_address(
-    email: str = Body(..., regex=r'^[^@]+@[^@]+\.[^@]+$'),
+    email: str = Body(..., pattern=r'^[^@]+@[^@]+\.[^@]+$'),
     db: EnhancedMemoryDB = Depends(get_enhanced_db)
 ):
     """

@@ -1,7 +1,7 @@
 """
 FastAPI application entry point for the enhanced MCP Multi-Context Memory System.
 """
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -13,10 +13,11 @@ from contextlib import asynccontextmanager
 from src.config.settings import get_settings
 from src.config.logging import setup_logging
 from src.database.enhanced_memory_db import EnhancedMemoryDB
-from src.utils.error_handling import setup_exception_handlers
-from src.api.routes import auth, memory, context, relation, config, admin
+from src.utils.error_handling import add_exception_handlers
+from src.api.routes import auth, memory, context, relation, config, admin, monitoring
 from src.api.dependencies import get_enhanced_db, get_current_user
 from src.schemas.auth import TokenData
+from src.config.manager import ConfigManager
 
 # Setup logging
 setup_logging()
@@ -33,22 +34,46 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting MCP Multi-Context Memory System")
     
+    # Initialize configuration manager
+    global config_manager
+    config_manager = ConfigManager()
+    
     # Initialize database
     global db_instance
     app_settings = get_settings()
     db_instance = EnhancedMemoryDB(
-        database_url=app_settings.database_url,
-        jsonl_data_path=app_settings.jsonl_data_path
+        db_url=app_settings.database_url,
+        hybrid_storage_config={"jsonl_path": app_settings.jsonl_data_path}
     )
     
     # Initialize database
     await db_instance.initialize()
+    
+    # Initialize hybrid storage
+    await db_instance.initialize_hybrid_storage()
     
     # Create tables if they don't exist
     await db_instance.create_tables()
     
     # Load initial data
     await db_instance.load_initial_data()
+    
+    # Apply configuration to database
+    config = config_manager.get_config()
+    
+    # Set database configuration
+    db_instance.set_compression_enabled(config.compression.enabled)
+    db_instance.set_compression_algorithm(config.compression.algorithm)
+    db_instance.set_compression_level(config.compression.level)
+    db_instance.set_compression_threshold(config.compression.threshold)
+    
+    db_instance.set_lazy_loading_enabled(config.lazy_loading.enabled)
+    db_instance.set_preview_length(config.lazy_loading.preview_length)
+    db_instance.set_eager_load_threshold(config.lazy_loading.eager_load_threshold)
+    
+    db_instance.set_chunked_storage_enabled(config.chunked_storage.enabled)
+    db_instance.set_chunk_size(config.chunked_storage.chunk_size)
+    db_instance.set_max_chunks(config.chunked_storage.max_chunks)
     
     logger.info("MCP Multi-Context Memory System started successfully")
     
@@ -91,7 +116,7 @@ app.add_middleware(
 )
 
 # Add exception handlers
-setup_exception_handlers(app)
+add_exception_handlers(app)
 
 # Add static files (if any)
 # app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -107,35 +132,42 @@ app.include_router(
     memory.router,
     prefix="/api/v1/memory",
     tags=["Memory"],
-    dependencies=[get_current_user]
+    dependencies=[Depends(get_current_user)]
 )
 
 app.include_router(
     context.router,
     prefix="/api/v1/context",
     tags=["Context"],
-    dependencies=[get_current_user]
+    dependencies=[Depends(get_current_user)]
 )
 
 app.include_router(
     relation.router,
     prefix="/api/v1/relation",
     tags=["Relation"],
-    dependencies=[get_current_user]
+    dependencies=[Depends(get_current_user)]
 )
 
 app.include_router(
     config.router,
     prefix="/api/v1/config",
     tags=["Configuration"],
-    dependencies=[get_current_user]
+    dependencies=[Depends(get_current_user)]
 )
 
 app.include_router(
     admin.router,
     prefix="/api/v1/admin",
     tags=["Administration"],
-    dependencies=[get_current_user]
+    dependencies=[Depends(get_current_user)]
+)
+
+app.include_router(
+    monitoring.router,
+    prefix="/api/v1/monitoring",
+    tags=["Monitoring"],
+    dependencies=[Depends(get_current_user)]
 )
 
 # Root endpoint
@@ -200,7 +232,12 @@ async def info():
             "Full-text search",
             "Multi-level access control",
             "Data migration",
-            "Backup and restore"
+            "Backup and restore",
+            "Performance monitoring",
+            "Compression optimization",
+            "Lazy loading",
+            "Chunked storage",
+            "Real-time dashboard"
         ],
         "endpoints": {
             "auth": "/api/v1/auth",
@@ -209,6 +246,7 @@ async def info():
             "relation": "/api/v1/relation",
             "config": "/api/v1/config",
             "admin": "/api/v1/admin",
+            "monitoring": "/api/v1/monitoring",
             "docs": "/docs",
             "redoc": "/redoc",
             "health": "/health",

@@ -56,9 +56,26 @@ def get_db() -> EnhancedMemoryDB:
     # For now, we'll create a new instance each time
     return EnhancedMemoryDB(database_url=settings.database_url)
 
+# Global database instance
+_db_instance: Optional[EnhancedMemoryDB] = None
+
 def get_enhanced_db() -> EnhancedMemoryDB:
-    """Get enhanced database instance."""
-    return get_db()
+    """
+    Get the enhanced database instance.
+    
+    Returns:
+        EnhancedMemoryDB instance
+    """
+    global _db_instance
+    
+    if _db_instance is None:
+        settings = get_settings()
+        _db_instance = EnhancedMemoryDB(
+            db_url=settings.database_url,
+            jsonl_data_path=settings.jsonl_data_path
+        )
+    
+    return _db_instance
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),

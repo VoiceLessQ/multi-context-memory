@@ -115,7 +115,7 @@ class MCPStdioServer:
                 "tools": {}
             },
             "serverInfo": {
-                "name": "mcp-multi-context-memory",
+                "name": "multi-context-memory-mcp",
                 "version": "1.0.0"
             }
         }
@@ -209,6 +209,18 @@ class MCPStdioServer:
         return {
             "tools": [
                 {
+                    "name": "create_context",
+                    "description": "Create a new context",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string", "description": "Context name"},
+                            "description": {"type": "string", "description": "Context description"}
+                        },
+                        "required": ["name", "description"]
+                    }
+                },
+                {
                     "name": "create_memory",
                     "description": "Create a new memory entry",
                     "inputSchema": {
@@ -220,30 +232,6 @@ class MCPStdioServer:
                             "access_level": {"type": "string", "description": "Access level"}
                         },
                         "required": ["title", "content"]
-                    }
-                },
-                {
-                    "name": "search_memories",
-                    "description": "Search for memories",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "query": {"type": "string", "description": "Search query"},
-                            "limit": {"type": "integer", "description": "Maximum results", "default": 10}
-                        },
-                        "required": ["query"]
-                    }
-                },
-                {
-                    "name": "create_context",
-                    "description": "Create a new context",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string", "description": "Context name"},
-                            "description": {"type": "string", "description": "Context description"}
-                        },
-                        "required": ["name", "description"]
                     }
                 },
                 {
@@ -287,68 +275,6 @@ class MCPStdioServer:
                     }
                 },
                 {
-                    "name": "analyze_knowledge_graph",
-                    "description": "Analyze the knowledge graph and provide insights",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "analysis_type": {"type": "string", "description": "Type of analysis: 'overview', 'centrality', 'connections'", "default": "overview"},
-                            "memory_id": {"type": "integer", "description": "Specific memory ID for focused analysis"}
-                        },
-                        "required": []
-                    }
-                },
-                {
-                    "name": "summarize_memory",
-                    "description": "Generate or update summary for a memory",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "memory_id": {"type": "integer", "description": "Memory ID to summarize"},
-                            "max_length": {"type": "integer", "description": "Maximum summary length in words", "default": 50}
-                        },
-                        "required": ["memory_id"]
-                    }
-                },
-                {
-                    "name": "update_memory",
-                    "description": "Update an existing memory",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "memory_id": {"type": "integer", "description": "Memory ID to update"},
-                            "title": {"type": "string", "description": "New title"},
-                            "content": {"type": "string", "description": "New content"},
-                            "tags": {"type": "string", "description": "Comma-separated tags"},
-                            "category": {"type": "string", "description": "Memory category"},
-                            "importance": {"type": "integer", "description": "Importance level (1-10)", "default": 1}
-                        },
-                        "required": ["memory_id"]
-                    }
-                },
-                {
-                    "name": "delete_memory",
-                    "description": "Delete a memory and its relations",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "memory_id": {"type": "integer", "description": "Memory ID to delete"}
-                        },
-                        "required": ["memory_id"]
-                    }
-                },
-                {
-                    "name": "get_memory_statistics",
-                    "description": "Get comprehensive statistics about memories",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {
-                            "include_content_analysis": {"type": "boolean", "description": "Include content analysis", "default": True}
-                        },
-                        "required": []
-                    }
-                },
-                {
                     "name": "bulk_create_memories",
                     "description": "Create multiple memories at once",
                     "inputSchema": {
@@ -374,15 +300,30 @@ class MCPStdioServer:
                     }
                 },
                 {
-                    "name": "categorize_memories",
-                    "description": "Automatically categorize and tag memories based on content analysis",
+                    "name": "get_memory_statistics",
+                    "description": "Get comprehensive statistics about memories",
                     "inputSchema": {
                         "type": "object",
                         "properties": {
-                            "context_id": {"type": "integer", "description": "Filter by context ID"},
-                            "auto_generate_tags": {"type": "boolean", "description": "Auto-generate tags from content", "default": True}
+                            "include_content_analysis": {"type": "boolean", "description": "Include content analysis", "default": True}
                         },
                         "required": []
+                    }
+                },
+                {
+                    "name": "update_memory",
+                    "description": "Update an existing memory",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "memory_id": {"type": "integer", "description": "Memory ID to update"},
+                            "title": {"type": "string", "description": "New title"},
+                            "content": {"type": "string", "description": "New content"},
+                            "tags": {"type": "string", "description": "Comma-separated tags"},
+                            "category": {"type": "string", "description": "Memory category"},
+                            "importance": {"type": "integer", "description": "Importance level (1-10)", "default": 1}
+                        },
+                        "required": ["memory_id"]
                     }
                 },
                 {
@@ -395,6 +336,90 @@ class MCPStdioServer:
                             "analysis_type": {"type": "string", "description": "Type: 'keywords', 'sentiment', 'complexity', 'readability'", "default": "keywords"}
                         },
                         "required": []
+                    }
+                },
+                {
+                    "name": "categorize_memories",
+                    "description": "Automatically categorize and tag memories based on content analysis",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "context_id": {"type": "integer", "description": "Filter by context ID"},
+                            "auto_generate_tags": {"type": "boolean", "description": "Auto-generate tags from content", "default": True}
+                        },
+                        "required": []
+                    }
+                },
+                {
+                    "name": "summarize_memory",
+                    "description": "Generate or update summary for a memory",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "memory_id": {"type": "integer", "description": "Memory ID to summarize"},
+                            "max_length": {"type": "integer", "description": "Maximum summary length in words", "default": 50}
+                        },
+                        "required": ["memory_id"]
+                    }
+                },
+                {
+                    "name": "search_memories",
+                    "description": "Search for memories",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "query": {"type": "string", "description": "Search query"},
+                            "limit": {"type": "integer", "description": "Maximum results", "default": 10}
+                        },
+                        "required": ["query"]
+                    }
+                },
+                {
+                    "name": "delete_memory",
+                    "description": "Delete a memory and its relations",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "memory_id": {"type": "integer", "description": "Memory ID to delete"}
+                        },
+                        "required": ["memory_id"]
+                    }
+                },
+                {
+                    "name": "analyze_knowledge_graph",
+                    "description": "Analyze the knowledge graph and provide insights",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "analysis_type": {"type": "string", "description": "Type of analysis: 'overview', 'centrality', 'connections'", "default": "overview"},
+                            "memory_id": {"type": "integer", "description": "Specific memory ID for focused analysis"}
+                        },
+                        "required": []
+                    }
+                },
+                {
+                    "name": "bulk_create_relations",
+                    "description": "Create multiple relations at once",
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                            "relations": {
+                                "type": "array",
+                                "description": "Array of relation objects",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {"type": "string"},
+                                        "source_memory_id": {"type": "integer"},
+                                        "target_memory_id": {"type": "integer"},
+                                        "strength": {"type": "number", "default": 1.0},
+                                        "relation_metadata": {"type": "object"}
+                                    },
+                                    "required": ["name", "source_memory_id", "target_memory_id"]
+                                }
+                            }
+                        },
+                        "required": ["relations"]
                     }
                 }
             ]
@@ -1198,6 +1223,59 @@ class MCPStdioServer:
                         "analysis_type": analysis_type,
                         "analyzed_memories": len(results),
                         "results": results
+                    }, indent=2)
+                }]
+            }
+
+        elif name == "bulk_create_relations":
+            relations_data = arguments["relations"]
+            
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            created_relations = []
+            for relation_data in relations_data:
+                source_id = relation_data["source_memory_id"]
+                target_id = relation_data["target_memory_id"]
+                
+                # Validate that both memories exist
+                cursor.execute("SELECT COUNT(*) FROM memories WHERE id = ?", (source_id,))
+                source_exists = cursor.fetchone()[0] > 0
+                cursor.execute("SELECT COUNT(*) FROM memories WHERE id = ?", (target_id,))
+                target_exists = cursor.fetchone()[0] > 0
+                
+                if not source_exists or not target_exists:
+                    # Skip invalid relations but continue with others
+                    continue
+                
+                cursor.execute("""
+                    INSERT INTO relations (name, source_memory_id, target_memory_id, strength, relation_metadata, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    relation_data["name"],
+                    source_id,
+                    target_id,
+                    relation_data.get("strength", 1.0),
+                    json.dumps(relation_data.get("relation_metadata", {})),
+                    datetime.now().isoformat()
+                ))
+                
+                created_relations.append({
+                    "id": cursor.lastrowid,
+                    "name": relation_data["name"],
+                    "source_memory_id": source_id,
+                    "target_memory_id": target_id
+                })
+            
+            conn.commit()
+            conn.close()
+            
+            return {
+                "content": [{
+                    "type": "text",
+                    "text": json.dumps({
+                        "created_count": len(created_relations),
+                        "relations": created_relations
                     }, indent=2)
                 }]
             }

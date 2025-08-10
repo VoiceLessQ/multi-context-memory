@@ -73,6 +73,9 @@ class Settings(BaseSettings):
     # Development Settings
     testing: bool = Field(default=False, env="TESTING")
     
+    # Allowed Hosts
+    allowed_hosts: List[str] = Field(default=["*"], env="ALLOWED_HOSTS")
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

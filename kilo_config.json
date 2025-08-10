@@ -5,10 +5,9 @@
       "args": [
         "exec",
         "-i",
-        "mcp-memory-system",
+        "mcp-multi-context-memory-mcp-memory-system-1",
         "python",
-        "-m",
-        "src.mcp_stdio_server"
+        "/app/src/mcp_stdio_server.py"
       ],
       "env": {
         "ENVIRONMENT": "production",

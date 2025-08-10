@@ -43,6 +43,37 @@ class RelationSearch(BaseModel):
     auto_generated: Optional[bool] = None
     limit: int = Field(default=10, ge=1, le=100)
     offset: int = Field(default=0, ge=0)
+    filters: Optional[Dict[str, Any]] = None
+
+class RelationSearchResponse(BaseModel):
+    """Schema for relation search response"""
+    id: int
+    name: str
+    source_memory_id: Optional[int] = None
+    target_memory_id: Optional[int] = None
+    strength: float
+    similarity: Optional[float] = None
+    created_at: datetime
+        
+    class Config:
+        from_attributes = True
+
+class RelationStats(BaseModel):
+    """Schema for relation statistics"""
+    total_relations: int = 0
+    relation_types: Dict[str, int] = {}
+    average_strength: float = 0.0
+    most_connected_memories: List[Dict[str, Any]] = []
+
+class RelationGraph(BaseModel):
+    """Schema for relation graph"""
+    nodes: List[Dict[str, Any]] = []
+    edges: List[Dict[str, Any]] = []
+    center_node_id: int
+    max_depth: int
+        
+    class Config:
+        from_attributes = True
 
 class RelationBulkCreate(BaseModel):
     """Schema for bulk relation creation"""

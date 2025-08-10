@@ -53,3 +53,29 @@ class ContextStats(BaseModel):
     
     class Config:
         from_attributes = True
+
+class ContextSearchResponse(BaseModel):
+    """Schema for context search response"""
+    contexts: List[ContextResponse]
+    total: int
+    limit: int
+    offset: int
+    
+    class Config:
+        from_attributes = True
+
+class ContextHierarchy(BaseModel):
+    """Schema for context hierarchy"""
+    id: int
+    name: str
+    description: Optional[str] = None
+    parent_id: Optional[int] = None
+    children: List['ContextHierarchy'] = []
+    depth: int = 0
+    memory_count: int = 0
+        
+    class Config:
+        from_attributes = True
+
+# Update forward references
+ContextHierarchy.model_rebuild()

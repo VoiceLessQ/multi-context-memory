@@ -10,7 +10,7 @@ class MemoryBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
     content: str = Field(..., min_length=1)
     context_id: Optional[int] = Field(None)
-    access_level: str = Field("user", regex="^(public|user|privileged|admin)$")
+    access_level: str = Field("user", pattern="^(public|user|privileged|admin)$")
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
     @validator('metadata')
@@ -30,7 +30,7 @@ class MemoryUpdate(BaseModel):
     """Schema for updating a memory."""
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     content: Optional[str] = Field(None, min_length=1)
-    access_level: Optional[str] = Field(None, regex="^(public|user|privileged|admin)$")
+    access_level: Optional[str] = Field(None, pattern="^(public|user|privileged|admin)$")
     metadata: Optional[Dict[str, Any]] = Field(None)
 
     @validator('metadata')
@@ -57,7 +57,7 @@ class MemorySearch(BaseModel):
     """Schema for memory search."""
     query: str = Field(..., min_length=1)
     context_id: Optional[int] = Field(None)
-    access_level: Optional[str] = Field(None, regex="^(public|user|privileged|admin)$")
+    access_level: Optional[str] = Field(None, pattern="^(public|user|privileged|admin)$")
     limit: int = Field(10, ge=1, le=100)
     threshold: float = Field(0.5, ge=0.0, le=1.0)
 

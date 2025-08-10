@@ -81,13 +81,13 @@ class ConfigStats(BaseModel):
 class ConfigImport(BaseModel):
     """Schema for configuration import."""
     configs: List[Dict[str, Any]]
-    merge_strategy: str = Field("overwrite", regex="^(overwrite|skip|merge)$")
+    merge_strategy: str = Field("overwrite", pattern="^(overwrite|skip|merge)$")
     validate_only: bool = Field(False)
     dry_run: bool = Field(False)
 
 class ConfigExport(BaseModel):
     """Schema for configuration export."""
-    format: str = Field("json", regex="^(json|yaml|csv|xml)$")
+    format: str = Field("json", pattern="^(json|yaml|csv|xml)$")
     category: Optional[str] = Field(None)
     include_sensitive: bool = Field(False)
     include_system: bool = Field(False)
@@ -144,7 +144,7 @@ class ConfigDiff(BaseModel):
     old_version: Optional[ConfigHistory] = None
     new_version: ConfigHistory
     differences: Dict[str, Any] = Field(default_factory=dict)
-    diff_type: str = Field("created", regex="^(created|updated|deleted)$")
+    diff_type: str = Field("created", pattern="^(created|updated|deleted)$")
 
 class ConfigDiffResponse(BaseModel):
     """Schema for configuration diff response."""
@@ -206,7 +206,7 @@ class ConfigTemplateStats(BaseModel):
 class ConfigApplyTemplate(BaseModel):
     """Schema for applying configuration template."""
     template_id: int
-    merge_strategy: str = Field("overwrite", regex="^(overwrite|skip|merge)$")
+    merge_strategy: str = Field("overwrite", pattern="^(overwrite|skip|merge)$")
     validate_only: bool = Field(False)
     dry_run: bool = Field(False)
     target_category: Optional[str] = Field(None)
@@ -245,7 +245,7 @@ class ConfigBackup(BaseModel):
     include_system: bool = Field(False)
     include_metadata: bool = Field(True)
     compression: bool = Field(True)
-    format: str = Field("json", regex="^(json|yaml|csv|xml)$")
+    format: str = Field("json", pattern="^(json|yaml|csv|xml)$")
 
 class ConfigBackupResponse(BaseModel):
     """Schema for configuration backup response."""
@@ -263,7 +263,7 @@ class ConfigBackupResponse(BaseModel):
 class ConfigRestore(BaseModel):
     """Schema for configuration restore."""
     backup_path: str = Field(..., min_length=1)
-    merge_strategy: str = Field("overwrite", regex="^(overwrite|skip|merge)$")
+    merge_strategy: str = Field("overwrite", pattern="^(overwrite|skip|merge)$")
     validate_only: bool = Field(False)
     dry_run: bool = Field(False)
     restore_metadata: bool = Field(True)
@@ -274,7 +274,7 @@ class ConfigRestoreResponse(BaseModel):
     """Schema for configuration restore response."""
     restore_id: str
     backup_path: str
-    status: str = Field(..., regex="^(pending|in_progress|completed|failed)$")
+    status: str = Field(..., pattern="^(pending|in_progress|completed|failed)$")
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     restored_items: Optional[Dict[str, int]] = None
@@ -282,7 +282,7 @@ class ConfigRestoreResponse(BaseModel):
 
 class ConfigHealth(BaseModel):
     """Schema for configuration health check."""
-    status: str = Field(..., regex="^(healthy|degraded|unhealthy)$")
+    status: str = Field(..., pattern="^(healthy|degraded|unhealthy)$")
     total_configs: int
     sensitive_configs: int
     system_configs: int
@@ -296,7 +296,7 @@ class ConfigAuditLog(BaseModel):
     """Schema for configuration audit log."""
     id: int
     config_id: int
-    action: str = Field(..., regex="^(created|updated|deleted|restored|exported|imported)$")
+    action: str = Field(..., pattern="^(created|updated|deleted|restored|exported|imported)$")
     old_value: Optional[Any] = None
     new_value: Optional[Any] = None
     changed_by: int
@@ -317,7 +317,7 @@ class ConfigAuditLogResponse(BaseModel):
 class ConfigAuditLogFilter(BaseModel):
     """Schema for configuration audit log filtering."""
     config_id: Optional[int] = Field(None)
-    action: Optional[str] = Field(None, regex="^(created|updated|deleted|restored|exported|imported)$")
+    action: Optional[str] = Field(None, pattern="^(created|updated|deleted|restored|exported|imported)$")
     changed_by: Optional[int] = Field(None)
     start_date: Optional[datetime] = Field(None)
     end_date: Optional[datetime] = Field(None)

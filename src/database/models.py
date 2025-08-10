@@ -157,6 +157,23 @@ class SystemConfig(Base):
     # Relationships
     updater = relationship("User")
 
+class MemoryChunk(Base):
+    """MemoryChunk model for storing chunks of large memories."""
+    __tablename__ = "memory_chunks"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    memory_id = Column(Integer, ForeignKey("memories.id"), nullable=False)
+    chunk_index = Column(Integer, nullable=False)  # Index of the chunk within the memory
+    chunk_data = Column(Text, nullable=False)  # The actual chunk content
+    chunk_metadata = Column(JSONColumn, nullable=True)  # Additional chunk metadata
+    compression_type = Column(String(20), nullable=True)  # e.g., "zstd", "gzip", "none"
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+    
+    # Relationships
+    memory = relationship("Memory")
+
 class AuditLog(Base):
     """AuditLog model for tracking system changes."""
     __tablename__ = "audit_logs"

@@ -144,7 +144,7 @@ class UserListResponse(BaseModel):
 
 class UserBatchRequest(BaseModel):
     """Schema for user batch operations."""
-    operation: str = Field(..., regex="^(activate|deactivate|delete|make_admin|remove_admin)$", description="Batch operation")
+    operation: str = Field(..., pattern="^(activate|deactivate|delete|make_admin|remove_admin)$", description="Batch operation")
     user_ids: list[int] = Field(..., description="List of user IDs")
 
 class UserBatchResponse(BaseModel):

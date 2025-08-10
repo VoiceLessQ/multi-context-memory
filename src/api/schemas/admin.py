@@ -10,7 +10,7 @@ class AdminUserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     full_name: Optional[str] = Field(None, max_length=100)
-    role: str = Field("user", regex="^(user|privileged|admin)$")
+    role: str = Field("user", pattern="^(user|privileged|admin)$")
     is_active: bool = True
 
     @validator('username')
@@ -44,7 +44,7 @@ class AdminUserUpdate(BaseModel):
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     email: Optional[EmailStr] = Field(None)
     full_name: Optional[str] = Field(None, max_length=100)
-    role: Optional[str] = Field(None, regex="^(user|privileged|admin)$")
+    role: Optional[str] = Field(None, pattern="^(user|privileged|admin)$")
     is_active: Optional[bool] = Field(None)
 
     @validator('username')
@@ -86,7 +86,7 @@ class SystemStats(BaseModel):
 class SystemLog(BaseModel):
     """Schema for system log."""
     id: int
-    level: str = Field(..., regex="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
+    level: str = Field(..., pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
     message: str = Field(..., min_length=1)
     user_id: Optional[int] = Field(None)
     action: Optional[str] = Field(None)
@@ -105,7 +105,7 @@ class SystemLogResponse(SystemLog):
 
 class SystemLogFilter(BaseModel):
     """Schema for system log filtering."""
-    level: Optional[str] = Field(None, regex="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
+    level: Optional[str] = Field(None, pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
     user_id: Optional[int] = Field(None)
     action: Optional[str] = Field(None)
     resource_type: Optional[str] = Field(None)
@@ -119,7 +119,7 @@ class BackupRequest(BaseModel):
     include_media: bool = Field(True)
     include_metadata: bool = Field(True)
     compression: bool = Field(True)
-    backup_type: str = Field("full", regex="^(full|incremental)$")
+    backup_type: str = Field("full", pattern="^(full|incremental)$")
 
 class BackupResponse(BaseModel):
     """Schema for backup response."""
@@ -145,7 +145,7 @@ class RestoreResponse(BaseModel):
     """Schema for restore response."""
     restore_id: str
     backup_path: str
-    status: str = Field(..., regex="^(pending|in_progress|completed|failed)$")
+    status: str = Field(..., pattern="^(pending|in_progress|completed|failed)$")
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     restored_items: Optional[Dict[str, int]] = None
@@ -153,8 +153,8 @@ class RestoreResponse(BaseModel):
 
 class SystemHealth(BaseModel):
     """Schema for system health check."""
-    status: str = Field(..., regex="^(healthy|degraded|unhealthy)$")
-    database_status: str = Field(..., regex="^(healthy|degraded|unhealthy)$")
+    status: str = Field(..., pattern="^(healthy|degraded|unhealthy)$")
+    database_status: str = Field(..., pattern="^(healthy|degraded|unhealthy)$")
     memory_usage_percent: float = Field(..., ge=0.0, le=100.0)
     cpu_usage_percent: float = Field(..., ge=0.0, le=100.0)
     disk_usage_percent: float = Field(..., ge=0.0, le=100.0)
@@ -175,7 +175,7 @@ class SystemConfig(BaseModel):
     enable_anonymous_access: bool = Field(False)
     enable_registration: bool = Field(True)
     enable_guest_access: bool = Field(False)
-    default_access_level: str = Field("user", regex="^(public|user|privileged|admin)$")
+    default_access_level: str = Field("user", pattern="^(public|user|privileged|admin)$")
     max_search_results: int = Field(100, ge=1, le=1000)
     similarity_threshold: float = Field(0.5, ge=0.0, le=1.0)
     auto_discover_relations: bool = Field(True)
@@ -195,7 +195,7 @@ class SystemConfig(BaseModel):
     enable_profiling: bool = Field(False)
     profiling_sample_rate: float = Field(0.1, ge=0.0, le=1.0)
     enable_debug_mode: bool = Field(False)
-    log_level: str = Field("INFO", regex="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
+    log_level: str = Field("INFO", pattern="^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
     log_file_path: Optional[str] = Field(None)
     log_rotation_size_mb: int = Field(100, ge=1)
     log_retention_count: int = Field(10, ge=1)

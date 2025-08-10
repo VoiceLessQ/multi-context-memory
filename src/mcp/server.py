@@ -130,7 +130,32 @@ class MCPServer:
             "config.set": self.handle_config_set,
             "migration.start": self.handle_migration_start,
             "migration.status": self.handle_migration_status,
-            "migration.cancel": self.handle_migration_cancel
+            "migration.cancel": self.handle_migration_cancel,
+            # Storage optimization handlers
+            "storage.compression.enable": self.handle_compression_enable,
+            "storage.compression.disable": self.handle_compression_disable,
+            "storage.compression.status": self.handle_compression_status,
+            "storage.chunked.enable": self.handle_chunked_storage_enable,
+            "storage.chunked.disable": self.handle_chunked_storage_disable,
+            "storage.chunked.status": self.handle_chunked_storage_status,
+            "storage.hybrid.enable": self.handle_hybrid_storage_enable,
+            "storage.hybrid.disable": self.handle_hybrid_storage_disable,
+            "storage.hybrid.status": self.handle_hybrid_storage_status,
+            "storage.distributed.enable": self.handle_distributed_storage_enable,
+            "storage.distributed.disable": self.handle_distributed_storage_disable,
+            "storage.distributed.status": self.handle_distributed_storage_status,
+            # Advanced feature handlers
+            "features.deduplication.enable": self.handle_deduplication_enable,
+            "features.deduplication.disable": self.handle_deduplication_disable,
+            "features.deduplication.status": self.handle_deduplication_status,
+            "features.deduplication.find-duplicates": self.handle_find_duplicates,
+            "features.deduplication.merge": self.handle_merge_duplicates,
+            "features.archival.enable": self.handle_archival_enable,
+            "features.archival.disable": self.handle_archival_disable,
+            "features.archival.status": self.handle_archival_status,
+            "features.archival.archive": self.handle_archive_memory,
+            "features.archival.restore": self.handle_restore_memory,
+            "features.archival.list": self.handle_list_archived_memories
         }
 
     async def handle_websocket(self, websocket: WebSocket):
@@ -794,4 +819,232 @@ class MCPServer:
             
         except Exception as e:
             handle_errors(e, "Failed to cancel migration")
+            raise
+
+    # Storage Optimization Handlers
+    async def handle_compression_enable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle compression enable message."""
+        try:
+            await self.db.set_compression_enabled(True)
+            return {"message": "Compression enabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to enable compression")
+            raise
+
+    async def handle_compression_disable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle compression disable message."""
+        try:
+            await self.db.set_compression_enabled(False)
+            return {"message": "Compression disabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to disable compression")
+            raise
+
+    async def handle_compression_status(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle compression status message."""
+        try:
+            status = self.db.get_compression_status()
+            return status
+        except Exception as e:
+            handle_errors(e, "Failed to get compression status")
+            raise
+
+    async def handle_chunked_storage_enable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle chunked storage enable message."""
+        try:
+            config = data.get("config", {})
+            await self.db.set_chunked_storage_enabled(True)
+            await self.db.set_chunk_size(config.get("chunk_size", 1024))
+            await self.db.set_max_chunks(config.get("max_chunks", 100))
+            return {"message": "Chunked storage enabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to enable chunked storage")
+            raise
+
+    async def handle_chunked_storage_disable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle chunked storage disable message."""
+        try:
+            await self.db.set_chunked_storage_enabled(False)
+            return {"message": "Chunked storage disabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to disable chunked storage")
+            raise
+
+    async def handle_chunked_storage_status(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle chunked storage status message."""
+        try:
+            status = self.db.get_chunked_storage_status()
+            return status
+        except Exception as e:
+            handle_errors(e, "Failed to get chunked storage status")
+            raise
+
+    async def handle_hybrid_storage_enable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle hybrid storage enable message."""
+        try:
+            config = data.get("config", {})
+            await self.db.set_hybrid_storage_enabled(True)
+            await self.db.set_hybrid_storage_config(config)
+            return {"message": "Hybrid storage enabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to enable hybrid storage")
+            raise
+
+    async def handle_hybrid_storage_disable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle hybrid storage disable message."""
+        try:
+            await self.db.set_hybrid_storage_enabled(False)
+            return {"message": "Hybrid storage disabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to disable hybrid storage")
+            raise
+
+    async def handle_hybrid_storage_status(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle hybrid storage status message."""
+        try:
+            status = self.db.get_hybrid_storage_status()
+            return status
+        except Exception as e:
+            handle_errors(e, "Failed to get hybrid storage status")
+            raise
+
+    async def handle_distributed_storage_enable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle distributed storage enable message."""
+        try:
+            config = data.get("config", {})
+            await self.db.set_distributed_storage_enabled(True)
+            await self.db.set_distributed_storage_config(config)
+            return {"message": "Distributed storage enabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to enable distributed storage")
+            raise
+
+    async def handle_distributed_storage_disable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle distributed storage disable message."""
+        try:
+            await self.db.set_distributed_storage_enabled(False)
+            return {"message": "Distributed storage disabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to disable distributed storage")
+            raise
+
+    async def handle_distributed_storage_status(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle distributed storage status message."""
+        try:
+            status = self.db.get_distributed_storage_status()
+            return status
+        except Exception as e:
+            handle_errors(e, "Failed to get distributed storage status")
+            raise
+
+    # Advanced Feature Handlers
+    async def handle_deduplication_enable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle deduplication enable message."""
+        try:
+            config = data.get("config", {})
+            await self.db.set_deduplication_enabled(True)
+            await self.db.set_deduplication_config(config)
+            return {"message": "Deduplication enabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to enable deduplication")
+            raise
+
+    async def handle_deduplication_disable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle deduplication disable message."""
+        try:
+            await self.db.set_deduplication_enabled(False)
+            return {"message": "Deduplication disabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to disable deduplication")
+            raise
+
+    async def handle_deduplication_status(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle deduplication status message."""
+        try:
+            status = self.db.get_deduplication_status()
+            return status
+        except Exception as e:
+            handle_errors(e, "Failed to get deduplication status")
+            raise
+
+    async def handle_find_duplicates(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle find duplicates message."""
+        try:
+            threshold = data.get("threshold", 0.9)
+            limit = data.get("limit", 100)
+            duplicates = await self.db.find_duplicate_memories(threshold=threshold, limit=limit)
+            return {"duplicates": duplicates}
+        except Exception as e:
+            handle_errors(e, "Failed to find duplicates")
+            raise
+
+    async def handle_merge_duplicates(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle merge duplicates message."""
+        try:
+            primary_id = data["primary_id"]
+            duplicate_ids = data["duplicate_ids"]
+            await self.db.merge_duplicate_memories(primary_id=primary_id, duplicate_ids=duplicate_ids)
+            return {"message": "Duplicates merged successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to merge duplicates")
+            raise
+
+    async def handle_archival_enable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle archival enable message."""
+        try:
+            config = data.get("config", {})
+            await self.db.set_archival_enabled(True)
+            await self.db.set_archival_config(config)
+            return {"message": "Archival enabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to enable archival")
+            raise
+
+    async def handle_archival_disable(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle archival disable message."""
+        try:
+            await self.db.set_archival_enabled(False)
+            return {"message": "Archival disabled successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to disable archival")
+            raise
+
+    async def handle_archival_status(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle archival status message."""
+        try:
+            status = self.db.get_archival_status()
+            return status
+        except Exception as e:
+            handle_errors(e, "Failed to get archival status")
+            raise
+
+    async def handle_archive_memory(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle archive memory message."""
+        try:
+            memory_id = data["memory_id"]
+            await self.db.archive_memory(memory_id=memory_id)
+            return {"message": "Memory archived successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to archive memory")
+            raise
+
+    async def handle_restore_memory(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle restore memory message."""
+        try:
+            memory_id = data["memory_id"]
+            await self.db.restore_memory(memory_id=memory_id)
+            return {"message": "Memory restored successfully"}
+        except Exception as e:
+            handle_errors(e, "Failed to restore memory")
+            raise
+
+    async def handle_list_archived_memories(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle list archived memories message."""
+        try:
+            skip = data.get("skip", 0)
+            limit = data.get("limit", 100)
+            memories = await self.db.get_archived_memories(skip=skip, limit=limit)
+            return {"memories": [memory.dict() for memory in memories]}
+        except Exception as e:
+            handle_errors(e, "Failed to list archived memories")
             raise

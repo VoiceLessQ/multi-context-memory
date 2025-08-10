@@ -16,6 +16,7 @@ from ...schemas.admin import (
     SystemHealth, SystemConfig
 )
 from ...schemas.auth import TokenData
+from ...api.dependencies import get_enhanced_db
 from ...utils.auth import get_current_user, get_optional_user
 from ...utils.error_handling import handle_errors
 from ...utils.admin import (
@@ -73,7 +74,7 @@ async def create_admin_user_route(
 async def get_admin_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    role: Optional[str] = Query(None, regex="^(user|privileged|admin)$"),
+    role: Optional[str] = Query(None, pattern="^(user|privileged|admin)$"),
     is_active: Optional[bool] = Query(None),
     db: EnhancedMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
@@ -491,8 +492,8 @@ async def update_admin_system_config(
 # Data Management
 @router.get("/data/export/{format}")
 async def export_admin_data(
-    format: str = Path(..., regex="^(json|csv|xml|pdf)$"),
-    data_type: str = Query(..., regex="^(all|users|memories|contexts|relations)$"),
+    format: str = Path(..., pattern="^(json|csv|xml|pdf)$"),
+    data_type: str = Query(..., pattern="^(all|users|memories|contexts|relations)$"),
     include_sensitive: bool = Query(False),
     db: EnhancedMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
@@ -551,7 +552,7 @@ async def export_admin_data(
 @router.post("/data/cleanup")
 async def cleanup_admin_data(
     dry_run: bool = Query(True),
-    data_type: Optional[str] = Query(None, regex="^(all|memories|contexts|relations)$"),
+    data_type: Optional[str] = Query(None, pattern="^(all|memories|contexts|relations)$"),
     older_than_days: Optional[int] = Query(None, ge=1),
     db: EnhancedMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)

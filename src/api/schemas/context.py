@@ -9,7 +9,7 @@ class ContextBase(BaseModel):
     """Base schema for context operations."""
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = Field(None)
-    access_level: str = Field("user", regex="^(public|user|privileged|admin)$")
+    access_level: str = Field("user", pattern="^(public|user|privileged|admin)$")
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
     @validator('metadata')
@@ -29,7 +29,7 @@ class ContextUpdate(BaseModel):
     """Schema for updating a context."""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = Field(None)
-    access_level: Optional[str] = Field(None, regex="^(public|user|privileged|admin)$")
+    access_level: Optional[str] = Field(None, pattern="^(public|user|privileged|admin)$")
     metadata: Optional[Dict[str, Any]] = Field(None)
 
     @validator('metadata')

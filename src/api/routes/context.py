@@ -13,6 +13,7 @@ from ...schemas.context import (
     ContextSearch, ContextSearchResponse, ContextHierarchy
 )
 from ...schemas.auth import TokenData
+from ...api.dependencies import get_enhanced_db
 from ...utils.auth import get_current_user, get_optional_user
 from ...utils.error_handling import handle_errors
 
@@ -56,7 +57,7 @@ async def get_contexts(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     parent_id: Optional[int] = Query(None),
-    access_level: Optional[str] = Query(None, regex="^(public|user|privileged|admin)$"),
+    access_level: Optional[str] = Query(None, pattern="^(public|user|privileged|admin)$"),
     db: EnhancedMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
@@ -545,9 +546,9 @@ async def batch_delete_contexts(
 
 @router.get("/export/{format}")
 async def export_contexts(
-    format: str = Path(..., regex="^(json|csv|xml|pdf)$"),
+    format: str = Path(..., pattern="^(json|csv|xml|pdf)$"),
     parent_id: Optional[int] = Query(None),
-    access_level: Optional[str] = Query(None, regex="^(public|user|privileged|admin)$"),
+    access_level: Optional[str] = Query(None, pattern="^(public|user|privileged|admin)$"),
     db: EnhancedMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):

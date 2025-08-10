@@ -19,7 +19,7 @@ class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     full_name: Optional[str] = Field(None, max_length=100)
-    role: str = Field("user", regex="^(user|privileged|admin)$")
+    role: str = Field("user", pattern="^(user|privileged|admin)$")
 
     @validator('username')
     def validate_username(cls, v):
@@ -52,7 +52,7 @@ class UserUpdate(BaseModel):
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     email: Optional[EmailStr] = Field(None)
     full_name: Optional[str] = Field(None, max_length=100)
-    role: Optional[str] = Field(None, regex="^(user|privileged|admin)$")
+    role: Optional[str] = Field(None, pattern="^(user|privileged|admin)$")
 
     @validator('username')
     def validate_username(cls, v):

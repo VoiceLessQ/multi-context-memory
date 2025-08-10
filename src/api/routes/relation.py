@@ -8,6 +8,7 @@ from pydantic import UUID4
 
 from ...database.models import Relation, User, Memory, Context
 from ...database.enhanced_memory_db import EnhancedMemoryDB
+from ...api.dependencies import get_enhanced_db
 from ...schemas.relation import (
     RelationCreate, RelationUpdate, RelationResponse, RelationStats,
     RelationSearch, RelationSearchResponse, RelationGraph
@@ -58,7 +59,7 @@ async def get_relations(
     memory_id: Optional[int] = Query(None),
     context_id: Optional[int] = Query(None),
     relation_type: Optional[str] = Query(None),
-    access_level: Optional[str] = Query(None, regex="^(public|user|privileged|admin)$"),
+    access_level: Optional[str] = Query(None, pattern="^(public|user|privileged|admin)$"),
     db: EnhancedMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
@@ -471,11 +472,11 @@ async def batch_delete_relations(
 
 @router.get("/export/{format}")
 async def export_relations(
-    format: str = Path(..., regex="^(json|csv|xml|pdf)$"),
+    format: str = Path(..., pattern="^(json|csv|xml|pdf)$"),
     memory_id: Optional[int] = Query(None),
     context_id: Optional[int] = Query(None),
     relation_type: Optional[str] = Query(None),
-    access_level: Optional[str] = Query(None, regex="^(public|user|privileged|admin)$"),
+    access_level: Optional[str] = Query(None, pattern="^(public|user|privileged|admin)$"),
     db: EnhancedMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
