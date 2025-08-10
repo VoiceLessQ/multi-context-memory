@@ -90,3 +90,5 @@ diagnostic_*.log
 *_ANALYSIS_TEMP.md
 *_DEBUG_TEMP.md
 temp_analysis/
+# === Analysis Reports ===
+code_analysis_report.md
