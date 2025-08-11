@@ -12,6 +12,7 @@ python-dotenv
 psutil
 redis
 numpy
+scikit-learn
 python-Levenshtein
 mmh3
 xxhash

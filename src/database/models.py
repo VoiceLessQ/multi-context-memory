@@ -26,7 +26,7 @@ class User(Base):
     # Relationships
     contexts = relationship("Context", back_populates="owner")
     memories = relationship("Memory", back_populates="owner")
-    relations = relationship("Relation", back_populates="owner")
+    # Remove relations relationship to avoid ambiguity
 
 class Context(Base):
     """Context model for organizing memories."""
@@ -45,7 +45,7 @@ class Context(Base):
     # Relationships
     owner = relationship("User", back_populates="contexts")
     memories = relationship("Memory", back_populates="context")
-    relations = relationship("Relation", back_populates="source_context")
+    # Remove relations relationship to avoid ambiguity
 
 class Memory(Base):
     """Memory model for storing knowledge entities."""
@@ -63,11 +63,15 @@ class Memory(Base):
     is_active = Column(Boolean, default=True)
     memory_metadata = Column(JSONColumn, nullable=True)  # Additional memory metadata
     embedding_vector = Column(LargeBinary, nullable=True)  # For storing numpy arrays
+    content_compressed = Column(Boolean, default=False)  # Whether content is compressed
+    content_size = Column(Integer, default=0)  # Size of original content in bytes
+    access_count = Column(Integer, default=0)  # Number of times memory has been accessed
+    last_accessed = Column(DateTime, nullable=True)  # Last time memory was accessed
     
     # Relationships
     owner = relationship("User", back_populates="memories")
     context = relationship("Context", back_populates="memories")
-    relations = relationship("Relation", back_populates="target_memory")
+    # Remove relations relationship to avoid ambiguity
     
     @property
     def embedding(self):
@@ -104,9 +108,9 @@ class Relation(Base):
     is_active = Column(Boolean, default=True)
     
     # Relationships
-    owner = relationship("User", back_populates="relations")
-    source_context = relationship("Context", foreign_keys=[source_context_id], back_populates="relations")
-    target_memory = relationship("Memory", foreign_keys=[target_memory_id], back_populates="relations")
+    owner = relationship("User")
+    source_context = relationship("Context", foreign_keys=[source_context_id])
+    target_memory = relationship("Memory", foreign_keys=[target_memory_id])
     source_memory = relationship("Memory", foreign_keys=[source_memory_id])
     target_context = relationship("Context", foreign_keys=[target_context_id])
 

@@ -1,36 +1,4 @@
 services:
-  mcp-memory-system:
-    build: .
-    ports:
-      - "8001:8000"
-    volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
-    environment:
-      - DATABASE_URL=sqlite:///./data/memories.db
-      - LOG_LEVEL=INFO
-      - COMPRESSION_ENABLED=true
-      - LAZY_LOADING_ENABLED=true
-      - CHUNKED_STORAGE_ENABLED=true
-      - HYBRID_STORAGE_ENABLED=false
-      - DISTRIBUTED_STORAGE_ENABLED=false
-      - DEDUPLICATION_ENABLED=true
-      - ARCHIVAL_ENABLED=true
-      - PERFORMANCE_MONITORING_ENABLED=true
-      - BACKUP_ENABLED=true
-      - BACKUP_INTERVAL=3600
-      - ROLLBACK_ENABLED=true
-      - MAX_ROLLBACK_VERSIONS=5
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - mcp-network
-
   api-server:
     build: .
     ports:
@@ -39,33 +7,29 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
     environment:
-      - DATABASE_URL=sqlite:///./data/memories.db
+      - DATABASE_URL=sqlite:///./data/sqlite/memory.db
       - LOG_LEVEL=INFO
       - API_HOST=0.0.0.0
       - API_PORT=8002
+      - JSONL_DATA_PATH=./data/jsonl/
     restart: unless-stopped
     command: ["python", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8002"]
-    depends_on:
-      - mcp-memory-system
     networks:
       - mcp-network
 
-  mcp-server:
+  memory-server:
     build: .
-    ports:
-      - "8003:8003"
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
     environment:
-      - DATABASE_URL=sqlite:///./data/memories.db
+      - DATABASE_URL=sqlite:///./data/sqlite/memory.db
       - LOG_LEVEL=INFO
-      - MCP_HOST=0.0.0.0
-      - MCP_PORT=8003
+      - JSONL_DATA_PATH=./data/jsonl/
     restart: unless-stopped
+    stdin_open: true
+    tty: true
     command: ["python", "src/mcp_stdio_server.py"]
-    depends_on:
-      - mcp-memory-system
     networks:
       - mcp-network
 

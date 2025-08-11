@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from ..database.models import User
-from ..database.enhanced_memory_db import EnhancedMemoryDB
+from ..database.refactored_memory_db import RefactoredMemoryDB
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -112,7 +112,7 @@ def verify_token(token: str) -> dict:
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    db: EnhancedMemoryDB = Depends(lambda: EnhancedMemoryDB()) # Simplified for now
+    db: RefactoredMemoryDB = Depends(lambda: RefactoredMemoryDB()) # Simplified for now
 ) -> User:
     """
     Get the current authenticated user.
@@ -152,7 +152,7 @@ async def get_current_user(
 
 async def get_optional_user(
     token: Optional[str] = Depends(oauth2_scheme),
-    db: EnhancedMemoryDB = Depends(lambda: EnhancedMemoryDB()) # Simplified for now
+    db: RefactoredMemoryDB = Depends(lambda: RefactoredMemoryDB()) # Simplified for now
 ) -> Optional[User]:
     """
     Get the current user if a valid token is provided, otherwise return None.
@@ -171,13 +171,13 @@ async def get_optional_user(
     except HTTPException:
         return None
 
-# Dependency to get EnhancedMemoryDB instance
+# Dependency to get RefactoredMemoryDB instance
 # This is a placeholder and might need to be connected to your actual DB setup
-def get_enhanced_db() -> EnhancedMemoryDB:
+def get_enhanced_db() -> RefactoredMemoryDB:
     """
-    Dependency to get an EnhancedMemoryDB instance.
+    Dependency to get an RefactoredMemoryDB instance.
     This is a simplified version.
     """
     # In a real application, you would initialize this with proper session/connection
     # For now, returning a new instance. This might need adjustment based on your FastAPI app setup.
-    return EnhancedMemoryDB()
+    return RefactoredMemoryDB()

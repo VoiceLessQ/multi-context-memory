@@ -5,7 +5,7 @@ from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body
 from sqlalchemy.orm import Session
 
-from ...database.enhanced_memory_db import EnhancedMemoryDB
+from ...database.refactored_memory_db import RefactoredMemoryDB
 from ...schemas.config import SystemConfig, ChunkedStorageConfig, CompressionConfig, LazyLoadingConfig
 from ...api.dependencies import get_enhanced_db, get_current_user
 from ...utils.error_handling import handle_errors
@@ -16,7 +16,7 @@ config_manager = ConfigManager()
 
 @router.get("/system", response_model=SystemConfig)
 async def get_system_config(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -45,7 +45,7 @@ async def get_system_config(
 @router.put("/system", response_model=SystemConfig)
 async def update_system_config(
     config: SystemConfig,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -82,7 +82,7 @@ async def update_system_config(
 
 @router.post("/system/reset")
 async def reset_system_config(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -115,7 +115,7 @@ async def reset_system_config(
 
 @router.get("/system/validate")
 async def validate_system_config(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -144,7 +144,7 @@ async def validate_system_config(
 @router.get("/system/export/{format}")
 async def export_system_config(
     format: str = Path(..., pattern="^(json|yaml|yml)$"),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -180,7 +180,7 @@ async def export_system_config(
 async def import_system_config(
     config_data: str,
     format: str = Query(..., pattern="^(json|yaml|yml)$"),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -217,7 +217,7 @@ async def import_system_config(
 
 @router.get("/storage/chunked", response_model=ChunkedStorageConfig)
 async def get_chunked_storage_config(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -246,7 +246,7 @@ async def get_chunked_storage_config(
 @router.put("/storage/chunked", response_model=ChunkedStorageConfig)
 async def update_chunked_storage_config(
     config: ChunkedStorageConfig,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -285,7 +285,7 @@ async def update_chunked_storage_config(
 
 @router.get("/compression", response_model=CompressionConfig)
 async def get_compression_config(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -314,7 +314,7 @@ async def get_compression_config(
 @router.put("/compression", response_model=CompressionConfig)
 async def update_compression_config(
     config: CompressionConfig,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -353,7 +353,7 @@ async def update_compression_config(
 
 @router.get("/lazy-loading", response_model=LazyLoadingConfig)
 async def get_lazy_loading_config(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """
@@ -382,7 +382,7 @@ async def get_lazy_loading_config(
 @router.put("/lazy-loading", response_model=LazyLoadingConfig)
 async def update_lazy_loading_config(
     config: LazyLoadingConfig,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user = Depends(get_current_user)
 ):
     """

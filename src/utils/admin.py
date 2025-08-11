@@ -3,7 +3,7 @@ Admin utilities for the MCP Multi-Context Memory System.
 """
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from ..database.enhanced_memory_db import EnhancedMemoryDB
+from ..database.refactored_memory_db import RefactoredMemoryDB
 from ..schemas.admin import (
     AdminUserCreate, AdminUserUpdate, AdminUserResponse,
     SystemStats, SystemLogFilter, SystemLogResponse,
@@ -12,7 +12,7 @@ from ..schemas.admin import (
 )
 from ..database.models import User
 
-async def create_admin_user(db: EnhancedMemoryDB, user_data: AdminUserCreate) -> AdminUserResponse:
+async def create_admin_user(db: RefactoredMemoryDB, user_data: AdminUserCreate) -> AdminUserResponse:
     """
     Create a new admin user.
     
@@ -38,7 +38,7 @@ async def create_admin_user(db: EnhancedMemoryDB, user_data: AdminUserCreate) ->
         updated_at=datetime.utcnow()
     )
 
-async def update_admin_user(db: EnhancedMemoryDB, user_id: int, user_data: AdminUserUpdate) -> AdminUserResponse:
+async def update_admin_user(db: RefactoredMemoryDB, user_id: int, user_data: AdminUserUpdate) -> AdminUserResponse:
     """
     Update an existing admin user.
     
@@ -65,7 +65,7 @@ async def update_admin_user(db: EnhancedMemoryDB, user_id: int, user_data: Admin
         updated_at=datetime.utcnow()
     )
 
-async def delete_admin_user(db: EnhancedMemoryDB, user_id: int) -> None:
+async def delete_admin_user(db: RefactoredMemoryDB, user_id: int) -> None:
     """
     Delete an admin user.
     
@@ -79,7 +79,7 @@ async def delete_admin_user(db: EnhancedMemoryDB, user_id: int) -> None:
     # TODO: Implement actual user deletion logic
     pass
 
-async def get_system_stats(db: EnhancedMemoryDB) -> SystemStats:
+async def get_system_stats(db: RefactoredMemoryDB) -> SystemStats:
     """
     Get system statistics.
     
@@ -108,7 +108,7 @@ async def get_system_stats(db: EnhancedMemoryDB) -> SystemStats:
         generated_at=datetime.utcnow()
     )
 
-async def get_system_logs(db: EnhancedMemoryDB, filter_data: SystemLogFilter) -> List[SystemLogResponse]:
+async def get_system_logs(db: RefactoredMemoryDB, filter_data: SystemLogFilter) -> List[SystemLogResponse]:
     """
     Get system logs with optional filtering.
     
@@ -126,7 +126,7 @@ async def get_system_logs(db: EnhancedMemoryDB, filter_data: SystemLogFilter) ->
     # For now, return empty list
     return []
 
-async def backup_system(db: EnhancedMemoryDB, backup_data: BackupRequest) -> BackupResponse:
+async def backup_system(db: RefactoredMemoryDB, backup_data: BackupRequest) -> BackupResponse:
     """
     Create a system backup.
     
@@ -151,7 +151,7 @@ async def backup_system(db: EnhancedMemoryDB, backup_data: BackupRequest) -> Bac
         message="Backup completed successfully (placeholder)"
     )
 
-async def restore_system(db: EnhancedMemoryDB, restore_data: RestoreRequest) -> RestoreResponse:
+async def restore_system(db: RefactoredMemoryDB, restore_data: RestoreRequest) -> RestoreResponse:
     """
     Restore system from backup.
     
@@ -176,7 +176,7 @@ async def restore_system(db: EnhancedMemoryDB, restore_data: RestoreRequest) -> 
         message="Restore completed successfully (placeholder)"
     )
 
-async def get_system_health(db: EnhancedMemoryDB) -> SystemHealth:
+async def get_system_health(db: RefactoredMemoryDB) -> SystemHealth:
     """
     Get system health status.
     
@@ -206,7 +206,7 @@ async def get_system_health(db: EnhancedMemoryDB) -> SystemHealth:
         uptime_seconds=0
     )
 
-async def update_system_config(db: EnhancedMemoryDB, config_data: SystemConfig) -> SystemConfig:
+async def update_system_config(db: RefactoredMemoryDB, config_data: SystemConfig) -> SystemConfig:
     """
     Update system configuration.
     

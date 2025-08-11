@@ -29,7 +29,7 @@ except ImportError:
         def encode(*args, **kwargs):
             return "dummy-token"
 
-from ..database.enhanced_memory_db import EnhancedMemoryDB
+from ..database.refactored_memory_db import RefactoredMemoryDB
 
 # Optional settings and logging
 try:
@@ -50,36 +50,35 @@ except ImportError:
 
 security = HTTPBearer()
 
-def get_db() -> EnhancedMemoryDB:
+def get_db() -> RefactoredMemoryDB:
     """Get database instance."""
     # This would typically be implemented with a database session manager
     # For now, we'll create a new instance each time
-    return EnhancedMemoryDB(database_url=settings.database_url)
+    return RefactoredMemoryDB(db_url=settings.database_url)
 
 # Global database instance
-_db_instance: Optional[EnhancedMemoryDB] = None
+_db_instance: Optional[RefactoredMemoryDB] = None
 
-def get_enhanced_db() -> EnhancedMemoryDB:
+def get_enhanced_db() -> RefactoredMemoryDB:
     """
-    Get the enhanced database instance.
+    Get the refactored database instance.
     
     Returns:
-        EnhancedMemoryDB instance
+        RefactoredMemoryDB instance
     """
     global _db_instance
     
     if _db_instance is None:
         settings = get_settings()
-        _db_instance = EnhancedMemoryDB(
-            db_url=settings.database_url,
-            jsonl_data_path=settings.jsonl_data_path
+        _db_instance = RefactoredMemoryDB(
+            db_url=settings.database_url
         )
     
     return _db_instance
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: EnhancedMemoryDB = Depends(get_db)
+    db: RefactoredMemoryDB = Depends(get_db)
 ) -> Dict[str, Any]:
     """Get current authenticated user."""
     if not JWT_AVAILABLE:
@@ -150,7 +149,7 @@ def get_current_user(
 
 def get_optional_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False)),
-    db: EnhancedMemoryDB = Depends(get_db)
+    db: RefactoredMemoryDB = Depends(get_db)
 ) -> Optional[Dict[str, Any]]:
     """Get current authenticated user (optional - returns None if not authenticated)."""
     if not JWT_AVAILABLE:
@@ -248,7 +247,7 @@ def check_resource_permission(
 
 def rate_limit_check(
     user_id: int,
-    db: EnhancedMemoryDB,
+    db: RefactoredMemoryDB,
     window_minutes: int = 60,
     max_requests: int = 100
 ) -> bool:

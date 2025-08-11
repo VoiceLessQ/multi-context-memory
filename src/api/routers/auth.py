@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Optional
 from pydantic import BaseModel
+from ..dependencies import get_current_user, get_db
 
 # Placeholder models
 class Token(BaseModel):
@@ -47,7 +48,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
 
 @router.get("/users/me", response_model=User)
-async def read_users_me(current_user: User = Depends(...)): # Replace with actual current user dependency
+async def read_users_me(current_user: dict = Depends(get_current_user)):
     """
     Get the current authenticated user.
     Placeholder: Replace with actual user retrieval logic.
@@ -58,7 +59,7 @@ async def read_users_me(current_user: User = Depends(...)): # Replace with actua
     )
 
 @router.post("/register", response_model=User, status_code=status.HTTP_201_CREATED)
-async def register_user(user: UserCreate, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def register_user(user: UserCreate, db=Depends(get_db)):
     """
     Register a new user.
     Placeholder: Replace with actual user registration logic.

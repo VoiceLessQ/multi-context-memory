@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from pydantic import UUID4
 
 from ...database.models import Context, User, Memory
-from ...database.enhanced_memory_db import EnhancedMemoryDB
+from ...database.refactored_memory_db import RefactoredMemoryDB
 from ...schemas.context import (
     ContextCreate, ContextUpdate, ContextResponse, ContextStats,
     ContextSearch, ContextSearchResponse, ContextHierarchy
@@ -22,7 +22,7 @@ router = APIRouter()
 @router.post("/", response_model=ContextResponse, status_code=201)
 async def create_context(
     context_data: ContextCreate,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -41,9 +41,13 @@ async def create_context(
     """
     try:
         # Create context
+        context_dict = context_data.dict()
+        # Remove metadata field as it's not supported by the database method
+        context_dict.pop('metadata', None)
+        
         context = await db.create_context(
-            user_id=current_user.id,
-            **context_data.dict()
+            owner_id=current_user.id,
+            **context_dict
         )
         
         return context
@@ -58,7 +62,7 @@ async def get_contexts(
     limit: int = Query(100, ge=1, le=1000),
     parent_id: Optional[int] = Query(None),
     access_level: Optional[str] = Query(None, pattern="^(public|user|privileged|admin)$"),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -97,7 +101,7 @@ async def get_contexts(
 @router.get("/{context_id}", response_model=ContextResponse)
 async def get_context(
     context_id: int = Path(..., gt=0),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -136,7 +140,7 @@ async def get_context(
 async def update_context(
     context_id: int = Path(..., gt=0),
     context_data: ContextUpdate = Body(...),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -182,7 +186,7 @@ async def update_context(
 @router.delete("/{context_id}", status_code=204)
 async def delete_context(
     context_id: int = Path(..., gt=0),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -222,7 +226,7 @@ async def delete_context(
 
 @router.get("/stats/summary", response_model=ContextStats)
 async def get_context_stats(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -253,7 +257,7 @@ async def get_context_stats(
 @router.post("/search", response_model=List[ContextSearchResponse])
 async def search_contexts(
     search_data: ContextSearch,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -288,7 +292,7 @@ async def search_contexts(
 async def get_context_hierarchy(
     root_id: Optional[int] = Query(None),
     max_depth: int = Query(5, ge=1, le=10),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -323,7 +327,7 @@ async def get_context_hierarchy(
 @router.get("/{context_id}/children", response_model=List[ContextResponse])
 async def get_context_children(
     context_id: int = Path(..., gt=0),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -358,7 +362,7 @@ async def get_context_memories(
     context_id: int = Path(..., gt=0),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -396,7 +400,7 @@ async def get_context_memories(
 async def move_context(
     context_id: int = Path(..., gt=0),
     new_parent_id: Optional[int] = Body(None),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -442,7 +446,7 @@ async def move_context(
 @router.post("/batch-create", response_model=List[ContextResponse], status_code=201)
 async def batch_create_contexts(
     contexts_data: List[ContextCreate],
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -463,9 +467,13 @@ async def batch_create_contexts(
         # Create contexts
         contexts = []
         for context_data in contexts_data:
+            context_dict = context_data.dict()
+            # Remove metadata field as it's not supported by the database method
+            context_dict.pop('metadata', None)
+            
             context = await db.create_context(
-                user_id=current_user.id,
-                **context_data.dict()
+                owner_id=current_user.id,
+                **context_dict
             )
             contexts.append(context)
         
@@ -478,7 +486,7 @@ async def batch_create_contexts(
 @router.post("/batch-update", response_model=List[ContextResponse])
 async def batch_update_contexts(
     updates_data: List[Dict[str, Any]],
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -516,7 +524,7 @@ async def batch_update_contexts(
 @router.post("/batch-delete", status_code=204)
 async def batch_delete_contexts(
     context_ids: List[int],
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -549,7 +557,7 @@ async def export_contexts(
     format: str = Path(..., pattern="^(json|csv|xml|pdf)$"),
     parent_id: Optional[int] = Query(None),
     access_level: Optional[str] = Query(None, pattern="^(public|user|privileged|admin)$"),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """

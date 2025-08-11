@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 import re
 
-from ..database.enhanced_memory_db import EnhancedMemoryDB
+from ..database.refactored_memory_db import RefactoredMemoryDB
 from ..config.settings import get_settings
 from ..config.logging import get_logger
 
@@ -20,12 +20,12 @@ class DataValidator:
     Validator for data integrity during migration.
     """
     
-    def __init__(self, db: EnhancedMemoryDB):
+    def __init__(self, db: RefactoredMemoryDB):
         """
         Initialize validator.
         
         Args:
-            db: EnhancedMemoryDB instance
+            db: RefactoredMemoryDB instance
         """
         self.db = db
         self.settings = get_settings()
@@ -485,7 +485,7 @@ def run_validation(jsonl_path: str = None, database_url: str = None):
     database_url = database_url or settings.database_url
     
     # Initialize validator
-    db = EnhancedMemoryDB(database_url=database_url)
+    db = RefactoredMemoryDB(db_url=database_url)
     validator = DataValidator(db)
     
     try:

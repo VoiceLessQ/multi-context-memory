@@ -22,6 +22,16 @@ class ChunkedStorageConfig(BaseModel):
     enabled: bool = Field(default=False, description="Enable chunked storage")
     chunk_size: int = Field(default=10000, ge=1000, description="Chunk size in characters")
     max_chunks: int = Field(default=100, ge=1, description="Maximum number of chunks per memory")
+    
+    # Helper method to configure for large single content
+    @classmethod
+    def for_large_single_content(cls, max_size: int = 1000000):
+        """Configure chunked storage to store large content as a single chunk."""
+        return cls(
+            enabled=True,
+            chunk_size=max_size,  # Very large chunk size
+            max_chunks=1          # Force single chunk
+        )
 
 class HybridStorageConfig(BaseModel):
     """Configuration for hybrid storage."""

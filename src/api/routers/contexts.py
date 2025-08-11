@@ -4,6 +4,7 @@ Placeholder for contexts API router.
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional
 from pydantic import BaseModel
+from ..dependencies import get_db
 
 # Placeholder models
 class ContextBase(BaseModel):
@@ -29,7 +30,7 @@ class ContextResponse(ContextBase):
 router = APIRouter(prefix="/contexts", tags=["contexts"])
 
 @router.post("/", response_model=ContextResponse, status_code=status.HTTP_201_CREATED)
-async def create_context(context: ContextCreate, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def create_context(context: ContextCreate, db=Depends(get_db)): # Replace db=Depends(get_db) with actual DB dependency
     """
     Create a new context.
     Placeholder: Replace with actual database logic.
@@ -37,7 +38,7 @@ async def create_context(context: ContextCreate, db=Depends(...)): # Replace db=
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Context creation not implemented")
 
 @router.get("/", response_model=List[ContextResponse])
-async def list_contexts(skip: int = 0, limit: int = 100, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def list_contexts(skip: int = 0, limit: int = 100, db=Depends(get_db)): # Replace db=Depends(get_db) with actual DB dependency
     """
     List all contexts.
     Placeholder: Replace with actual database logic.
@@ -45,7 +46,7 @@ async def list_contexts(skip: int = 0, limit: int = 100, db=Depends(...)): # Rep
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Listing contexts not implemented")
 
 @router.get("/{context_id}", response_model=ContextResponse)
-async def get_context(context_id: int, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def get_context(context_id: int, db=Depends(get_db)): # Replace db=Depends(get_db) with actual DB dependency
     """
     Get a specific context by ID.
     Placeholder: Replace with actual database logic.
@@ -53,7 +54,7 @@ async def get_context(context_id: int, db=Depends(...)): # Replace db=Depends(..
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Getting context not implemented")
 
 @router.put("/{context_id}", response_model=ContextResponse)
-async def update_context(context_id: int, context_update: ContextUpdate, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def update_context(context_id: int, context_update: ContextUpdate, db=Depends(get_db)): # Replace db=Depends(get_db) with actual DB dependency
     """
     Update a specific context by ID.
     Placeholder: Replace with actual database logic.
@@ -61,7 +62,7 @@ async def update_context(context_id: int, context_update: ContextUpdate, db=Depe
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Updating context not implemented")
 
 @router.delete("/{context_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_context(context_id: int, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def delete_context(context_id: int, db=Depends(get_db)): # Replace db=Depends(get_db) with actual DB dependency
     """
     Delete a specific context by ID.
     Placeholder: Replace with actual database logic.

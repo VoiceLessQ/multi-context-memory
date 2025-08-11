@@ -12,9 +12,9 @@ from contextlib import asynccontextmanager
 
 from src.config.settings import get_settings
 from src.config.logging import setup_logging
-from src.database.enhanced_memory_db import EnhancedMemoryDB
+from src.database.refactored_memory_db import RefactoredMemoryDB
 from src.utils.error_handling import add_exception_handlers
-from src.api.routes import auth, memory, context, relation, config, admin, monitoring
+from src.api.routers import auth, memories, contexts, admin
 from src.api.dependencies import get_enhanced_db, get_current_user
 from src.schemas.auth import TokenData
 from src.config.manager import ConfigManager
@@ -41,9 +41,8 @@ async def lifespan(app: FastAPI):
     # Initialize database
     global db_instance
     app_settings = get_settings()
-    db_instance = EnhancedMemoryDB(
-        db_url=app_settings.database_url,
-        hybrid_storage_config={"jsonl_path": app_settings.jsonl_data_path}
+    db_instance = RefactoredMemoryDB(
+        db_url=app_settings.database_url
     )
     
     # Initialize database
@@ -129,30 +128,16 @@ app.include_router(
 )
 
 app.include_router(
-    memory.router,
-    prefix="/api/v1/memory",
-    tags=["Memory"],
+    memories.router,
+    prefix="/api/v1/memories",
+    tags=["Memories"],
     dependencies=[Depends(get_current_user)]
 )
 
 app.include_router(
-    context.router,
-    prefix="/api/v1/context",
-    tags=["Context"],
-    dependencies=[Depends(get_current_user)]
-)
-
-app.include_router(
-    relation.router,
-    prefix="/api/v1/relation",
-    tags=["Relation"],
-    dependencies=[Depends(get_current_user)]
-)
-
-app.include_router(
-    config.router,
-    prefix="/api/v1/config",
-    tags=["Configuration"],
+    contexts.router,
+    prefix="/api/v1/contexts",
+    tags=["Contexts"],
     dependencies=[Depends(get_current_user)]
 )
 
@@ -160,13 +145,6 @@ app.include_router(
     admin.router,
     prefix="/api/v1/admin",
     tags=["Administration"],
-    dependencies=[Depends(get_current_user)]
-)
-
-app.include_router(
-    monitoring.router,
-    prefix="/api/v1/monitoring",
-    tags=["Monitoring"],
     dependencies=[Depends(get_current_user)]
 )
 

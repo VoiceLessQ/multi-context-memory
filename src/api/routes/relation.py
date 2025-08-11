@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from pydantic import UUID4
 
 from ...database.models import Relation, User, Memory, Context
-from ...database.enhanced_memory_db import EnhancedMemoryDB
+from ...database.refactored_memory_db import RefactoredMemoryDB
 from ...api.dependencies import get_enhanced_db
 from ...schemas.relation import (
     RelationCreate, RelationUpdate, RelationResponse, RelationStats,
@@ -22,7 +22,7 @@ router = APIRouter()
 @router.post("/", response_model=RelationResponse, status_code=201)
 async def create_relation(
     relation_data: RelationCreate,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -60,7 +60,7 @@ async def get_relations(
     context_id: Optional[int] = Query(None),
     relation_type: Optional[str] = Query(None),
     access_level: Optional[str] = Query(None, pattern="^(public|user|privileged|admin)$"),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -103,7 +103,7 @@ async def get_relations(
 @router.get("/{relation_id}", response_model=RelationResponse)
 async def get_relation(
     relation_id: int = Path(..., gt=0),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -142,7 +142,7 @@ async def get_relation(
 async def update_relation(
     relation_id: int = Path(..., gt=0),
     relation_data: RelationUpdate = Body(...),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -188,7 +188,7 @@ async def update_relation(
 @router.delete("/{relation_id}", status_code=204)
 async def delete_relation(
     relation_id: int = Path(..., gt=0),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -228,7 +228,7 @@ async def delete_relation(
 
 @router.get("/stats/summary", response_model=RelationStats)
 async def get_relation_stats(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -259,7 +259,7 @@ async def get_relation_stats(
 @router.post("/search", response_model=List[RelationSearchResponse])
 async def search_relations(
     search_data: RelationSearch,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -294,7 +294,7 @@ async def search_relations(
 async def get_memory_relations_graph(
     memory_id: int = Path(..., gt=0),
     max_depth: int = Query(3, ge=1, le=5),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -331,7 +331,7 @@ async def discover_relations(
     memory_id: int = Path(..., gt=0),
     threshold: float = Query(0.5, ge=0.0, le=1.0),
     max_results: int = Query(10, ge=1, le=100),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """
@@ -368,7 +368,7 @@ async def discover_relations(
 @router.post("/batch-create", response_model=List[RelationResponse], status_code=201)
 async def batch_create_relations(
     relations_data: List[RelationCreate],
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -404,7 +404,7 @@ async def batch_create_relations(
 @router.post("/batch-update", response_model=List[RelationResponse])
 async def batch_update_relations(
     updates_data: List[Dict[str, Any]],
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -442,7 +442,7 @@ async def batch_update_relations(
 @router.post("/batch-delete", status_code=204)
 async def batch_delete_relations(
     relation_ids: List[int],
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -477,7 +477,7 @@ async def export_relations(
     context_id: Optional[int] = Query(None),
     relation_type: Optional[str] = Query(None),
     access_level: Optional[str] = Query(None, pattern="^(public|user|privileged|admin)$"),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: Optional[User] = Depends(get_optional_user)
 ):
     """

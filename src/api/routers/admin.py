@@ -4,6 +4,7 @@ Placeholder for admin API router.
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional
 from pydantic import BaseModel, EmailStr
+from ..dependencies import get_db, get_current_admin
 
 # Placeholder models (these should ideally be imported from a shared schemas module)
 class AdminUserBase(BaseModel):
@@ -49,10 +50,10 @@ class SystemHealth(BaseModel):
     disk_usage_percent: float = 0.0
     uptime_seconds: int = 0
 
-router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(...)]) # Add actual auth/role dependency
+router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(get_current_admin)]) # Add actual auth/role dependency
 
 @router.get("/users", response_model=List[AdminUserResponse])
-async def list_users(skip: int = 0, limit: int = 100, db=Depends(...)): # Replace db=Depends(...)
+async def list_users(skip: int = 0, limit: int = 100, db=Depends(get_db)): # Replace db=Depends(get_db)
     """
     List all users (admin only).
     Placeholder: Replace with actual database logic.
@@ -60,7 +61,7 @@ async def list_users(skip: int = 0, limit: int = 100, db=Depends(...)): # Replac
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Listing users not implemented")
 
 @router.get("/users/{user_id}", response_model=AdminUserResponse)
-async def get_user(user_id: int, db=Depends(...)): # Replace db=Depends(...)
+async def get_user(user_id: int, db=Depends(get_db)): # Replace db=Depends(get_db)
     """
     Get a specific user by ID (admin only).
     Placeholder: Replace with actual database logic.
@@ -68,7 +69,7 @@ async def get_user(user_id: int, db=Depends(...)): # Replace db=Depends(...)
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Getting user not implemented")
 
 @router.post("/users", response_model=AdminUserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user(user: AdminUserCreate, db=Depends(...)): # Replace db=Depends(...)
+async def create_user(user: AdminUserCreate, db=Depends(get_db)): # Replace db=Depends(get_db)
     """
     Create a new user (admin only).
     Placeholder: Replace with actual database logic.
@@ -76,7 +77,7 @@ async def create_user(user: AdminUserCreate, db=Depends(...)): # Replace db=Depe
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Creating user not implemented")
 
 @router.put("/users/{user_id}", response_model=AdminUserResponse)
-async def update_user(user_id: int, user_update: AdminUserUpdate, db=Depends(...)): # Replace db=Depends(...)
+async def update_user(user_id: int, user_update: AdminUserUpdate, db=Depends(get_db)): # Replace db=Depends(get_db)
     """
     Update a specific user by ID (admin only).
     Placeholder: Replace with actual database logic.
@@ -84,7 +85,7 @@ async def update_user(user_id: int, user_update: AdminUserUpdate, db=Depends(...
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Updating user not implemented")
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(user_id: int, db=Depends(...)): # Replace db=Depends(...)
+async def delete_user(user_id: int, db=Depends(get_db)): # Replace db=Depends(get_db)
     """
     Delete a specific user by ID (admin only).
     Placeholder: Replace with actual database logic.
@@ -92,7 +93,7 @@ async def delete_user(user_id: int, db=Depends(...)): # Replace db=Depends(...)
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Deleting user not implemented")
 
 @router.get("/stats", response_model=SystemStats)
-async def get_system_stats(db=Depends(...)): # Replace db=Depends(...)
+async def get_system_stats(db=Depends(get_db)): # Replace db=Depends(get_db)
     """
     Get system statistics (admin only).
     Placeholder: Replace with actual logic.

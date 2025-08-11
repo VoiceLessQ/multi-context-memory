@@ -9,7 +9,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta
 
 from ...database.models import User
-from ...database.enhanced_memory_db import EnhancedMemoryDB
+from ...database.refactored_memory_db import RefactoredMemoryDB
 from ...api.dependencies import get_enhanced_db
 from ...schemas.auth import (
     Token, TokenData, UserCreate, UserResponse, UserUpdate,
@@ -29,7 +29,7 @@ router = APIRouter()
 @router.post("/register", response_model=UserResponse, status_code=201)
 async def register(
     user_data: UserCreate,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Register a new user.
@@ -85,7 +85,7 @@ async def register(
 @router.post("/login", response_model=Token)
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Login user with username and password.
@@ -143,7 +143,7 @@ async def login(
 @router.post("/login-with-token", response_model=Token)
 async def login_with_token(
     login_data: LoginRequest,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Login user with email and password.
@@ -201,7 +201,7 @@ async def login_with_token(
 @router.post("/refresh", response_model=Token)
 async def refresh_token(
     refresh_data: RefreshTokenRequest,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Refresh access token.
@@ -267,7 +267,7 @@ async def refresh_token(
 @router.post("/logout")
 async def logout(
     current_user: User = Depends(get_current_user),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Logout user.
@@ -319,7 +319,7 @@ async def get_current_user_info(
 async def update_current_user(
     user_data: UserUpdate,
     current_user: User = Depends(get_current_user),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Update current user information.
@@ -352,7 +352,7 @@ async def update_current_user(
 async def change_password(
     password_data: PasswordChangeRequest,
     current_user: User = Depends(get_current_user),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Change user password.
@@ -393,7 +393,7 @@ async def change_password(
 @router.post("/reset-password-request")
 async def request_password_reset(
     reset_data: PasswordResetRequest,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Request password reset.
@@ -425,7 +425,7 @@ async def request_password_reset(
 @router.post("/reset-password-confirm")
 async def confirm_password_reset(
     reset_data: PasswordResetConfirm,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Confirm password reset.
@@ -477,7 +477,7 @@ async def confirm_password_reset(
 @router.post("/activate")
 async def activate_user(
     activation_data: UserActivationRequest,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Activate user account.
@@ -529,7 +529,7 @@ async def activate_user(
 @router.get("/stats/summary", response_model=UserStats)
 async def get_user_stats(
     current_user: User = Depends(get_current_user),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Get user statistics.
@@ -557,7 +557,7 @@ async def get_user_stats(
 @router.post("/verify-email")
 async def verify_email_address(
     email: str = Body(..., pattern=r'^[^@]+@[^@]+\.[^@]+$'),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Verify email address format.
@@ -596,7 +596,7 @@ async def verify_email_address(
 @router.post("/check-username")
 async def check_username_availability(
     username: str = Body(..., min_length=3, max_length=50),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ):
     """
     Check username availability.

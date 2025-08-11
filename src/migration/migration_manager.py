@@ -8,7 +8,7 @@ from datetime import datetime
 import time
 from pathlib import Path
 
-from ..database.enhanced_memory_db import EnhancedMemoryDB
+from ..database.refactored_memory_db import RefactoredMemoryDB
 from ..utils.compression import CompressionManager
 from ..monitoring.memory_monitor import MemoryMonitor
 from ..backup.backup_manager import BackupManager
@@ -23,7 +23,7 @@ class MigrationManager:
         self.db_url = db_url
         self.batch_size = batch_size
         self.dry_run = dry_run
-        self.db = EnhancedMemoryDB(db_url)
+        self.db = RefactoredMemoryDB(db_url)
         self.compression_manager = CompressionManager()
         self.memory_monitor = MemoryMonitor(db_url)
         self.backup_manager = BackupManager()

@@ -6,6 +6,7 @@ integrated with the MCP system if exposed via a REST API.
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
+from ..dependencies import get_db
 
 # Placeholder models
 class ToolInfo(BaseModel):
@@ -41,7 +42,7 @@ async def list_tools():
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Listing tools not implemented")
 
 @router.post("/execute", response_model=ToolExecutionResponse)
-async def execute_tool(request: ToolExecutionRequest, db=Depends(...)): # Replace db=Depends(...) if needed
+async def execute_tool(request: ToolExecutionRequest, db=Depends(get_db)): # Replace db=Depends(get_db) if needed
     """
     Execute a specific tool.
     Placeholder: Replace with actual logic to route and execute tool calls.

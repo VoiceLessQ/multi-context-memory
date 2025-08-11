@@ -9,7 +9,7 @@ from sqlalchemy import func, desc
 import json
 
 from ..database.models import Memory, Context, Relation
-from ..database.enhanced_memory_db import EnhancedMemoryDB
+from ..database.refactored_memory_db import RefactoredMemoryDB
 from .performance_monitor import PerformanceMonitor
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class MemoryMonitor:
         self.db_url = db_url
         self.session = session
         self.performance_monitor = PerformanceMonitor(session) if session else None
-        self.enhanced_db = EnhancedMemoryDB(db_url, session)
+        self.enhanced_db = RefactoredMemoryDB(db_url, session)
         
         # Monitoring thresholds
         self.compression_threshold = 0.1  # 10% compression ratio minimum

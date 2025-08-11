@@ -4,6 +4,7 @@ Placeholder for memories API router.
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List, Optional
 from pydantic import BaseModel
+from ..dependencies import get_db
 
 # Placeholder models
 class MemoryBase(BaseModel):
@@ -29,7 +30,7 @@ class MemoryResponse(MemoryBase):
 router = APIRouter(prefix="/memories", tags=["memories"])
 
 @router.post("/", response_model=MemoryResponse, status_code=status.HTTP_201_CREATED)
-async def create_memory(memory: MemoryCreate, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def create_memory(memory: MemoryCreate, db=Depends(get_db)):
     """
     Create a new memory.
     Placeholder: Replace with actual database logic.
@@ -43,7 +44,7 @@ async def create_memory(memory: MemoryCreate, db=Depends(...)): # Replace db=Dep
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Memory creation not implemented")
 
 @router.get("/", response_model=List[MemoryResponse])
-async def list_memories(skip: int = 0, limit: int = 100, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def list_memories(skip: int = 0, limit: int = 100, db=Depends(get_db)):
     """
     List all memories.
     Placeholder: Replace with actual database logic.
@@ -54,7 +55,7 @@ async def list_memories(skip: int = 0, limit: int = 100, db=Depends(...)): # Rep
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Listing memories not implemented")
 
 @router.get("/{memory_id}", response_model=MemoryResponse)
-async def get_memory(memory_id: int, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def get_memory(memory_id: int, db=Depends(get_db)):
     """
     Get a specific memory by ID.
     Placeholder: Replace with actual database logic.
@@ -67,7 +68,7 @@ async def get_memory(memory_id: int, db=Depends(...)): # Replace db=Depends(...)
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Getting memory not implemented")
 
 @router.put("/{memory_id}", response_model=MemoryResponse)
-async def update_memory(memory_id: int, memory_update: MemoryUpdate, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def update_memory(memory_id: int, memory_update: MemoryUpdate, db=Depends(get_db)):
     """
     Update a specific memory by ID.
     Placeholder: Replace with actual database logic.
@@ -84,7 +85,7 @@ async def update_memory(memory_id: int, memory_update: MemoryUpdate, db=Depends(
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Updating memory not implemented")
 
 @router.delete("/{memory_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_memory(memory_id: int, db=Depends(...)): # Replace db=Depends(...) with actual DB dependency
+async def delete_memory(memory_id: int, db=Depends(get_db)):
     """
     Delete a specific memory by ID.
     Placeholder: Replace with actual database logic.

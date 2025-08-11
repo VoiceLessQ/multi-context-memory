@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from typing import Dict, Any, List, Optional
 import logging
 
-from ...database.enhanced_memory_db import EnhancedMemoryDB
+from ...database.refactored_memory_db import RefactoredMemoryDB
 from ...monitoring.memory_monitor import MemoryMonitor
 from ...monitoring.dashboard import MonitoringDashboard
 from ...database.session import get_db
@@ -19,7 +19,7 @@ router = APIRouter()
 @router.get("/metrics")
 async def get_metrics(
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> Dict[str, Any]:
     """
     Get system metrics.
@@ -43,7 +43,7 @@ async def get_metrics(
 @router.get("/alerts")
 async def get_alerts(
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> List[Dict[str, Any]]:
     """
     Get system alerts.
@@ -67,7 +67,7 @@ async def get_alerts(
 @router.get("/memory-usage")
 async def get_memory_usage(
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> Dict[str, Any]:
     """
     Get memory usage statistics.
@@ -91,7 +91,7 @@ async def get_memory_usage(
 @router.get("/compression-stats")
 async def get_compression_stats(
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> Dict[str, Any]:
     """
     Get compression statistics.
@@ -115,7 +115,7 @@ async def get_compression_stats(
 @router.get("/lazy-loading-stats")
 async def get_lazy_loading_stats(
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> Dict[str, Any]:
     """
     Get lazy loading statistics.
@@ -139,7 +139,7 @@ async def get_lazy_loading_stats(
 @router.get("/performance-stats")
 async def get_performance_stats(
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> Dict[str, Any]:
     """
     Get performance statistics.
@@ -163,7 +163,7 @@ async def get_performance_stats(
 @router.get("/dashboard")
 async def get_dashboard(
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> Dict[str, Any]:
     """
     Get dashboard data.
@@ -187,7 +187,7 @@ async def get_dashboard(
 @router.get("/dashboard/html")
 async def get_html_dashboard(
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> str:
     """
     Get HTML dashboard.
@@ -212,7 +212,7 @@ async def get_html_dashboard(
 async def export_metrics(
     format: str = Query("json", pattern="^(json|csv)$"),
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> str:
     """
     Export metrics in specified format.
@@ -239,7 +239,7 @@ async def export_metrics(
 @router.post("/collect-historical-data")
 async def collect_historical_data(
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> Dict[str, Any]:
     """
     Collect historical data for charts.
@@ -268,7 +268,7 @@ async def get_historical_data(
     metric: str = Query(..., pattern="^(memory_usage|compression_ratio|lazy_loading_ratio|response_time|error_rate)$"),
     points: int = Query(100, ge=1, le=1000),
     db: Session = Depends(get_db),
-    enhanced_db: EnhancedMemoryDB = Depends(get_enhanced_db)
+    enhanced_db: RefactoredMemoryDB = Depends(get_enhanced_db)
 ) -> Dict[str, Any]:
     """
     Get historical data for a specific metric.

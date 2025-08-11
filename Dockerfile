@@ -25,13 +25,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Create necessary directories
+RUN mkdir -p /app/data/sqlite /app/data/jsonl /app/logs /app/config
+
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
     chown -R appuser:appuser /app
 USER appuser
 
-# Expose port for API (if applicable)
-EXPOSE 8000
+# Expose port for API
+EXPOSE 8002
 
 # Default command for the main service
-CMD ["python", "-m", "src.api.main"]
+CMD ["python", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8002"]

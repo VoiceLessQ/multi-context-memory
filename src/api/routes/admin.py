@@ -8,7 +8,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta
 
 from ...database.models import User, Context, Memory, Relation
-from ...database.enhanced_memory_db import EnhancedMemoryDB
+from ...database.refactored_memory_db import RefactoredMemoryDB
 from ...schemas.admin import (
     AdminUserBase, AdminUserCreate, AdminUserUpdate, AdminUserResponse,
     SystemStats, SystemLog, SystemLogResponse, SystemLogFilter,
@@ -31,7 +31,7 @@ router = APIRouter()
 @router.post("/users", response_model=AdminUserResponse, status_code=201)
 async def create_admin_user_route(
     user_data: AdminUserCreate,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -76,7 +76,7 @@ async def get_admin_users(
     limit: int = Query(100, ge=1, le=1000),
     role: Optional[str] = Query(None, pattern="^(user|privileged|admin)$"),
     is_active: Optional[bool] = Query(None),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -123,7 +123,7 @@ async def get_admin_users(
 @router.get("/users/{user_id}", response_model=AdminUserResponse)
 async def get_admin_user(
     user_id: int = Path(..., gt=0),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -166,7 +166,7 @@ async def get_admin_user(
 async def update_admin_user_route(
     user_id: int = Path(..., gt=0),
     user_data: AdminUserUpdate = Body(...),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -210,7 +210,7 @@ async def update_admin_user_route(
 @router.delete("/users/{user_id}", status_code=204)
 async def delete_admin_user_route(
     user_id: int = Path(..., gt=0),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -249,7 +249,7 @@ async def delete_admin_user_route(
 # System Management
 @router.get("/stats/summary", response_model=SystemStats)
 async def get_admin_system_stats(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -287,7 +287,7 @@ async def get_admin_system_stats(
 @router.get("/logs", response_model=List[SystemLogResponse])
 async def get_admin_system_logs(
     filter_data: SystemLogFilter = Depends(),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -329,7 +329,7 @@ async def get_admin_system_logs(
 @router.post("/backup", response_model=BackupResponse)
 async def create_admin_backup(
     backup_data: BackupRequest,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -371,7 +371,7 @@ async def create_admin_backup(
 @router.post("/restore", response_model=RestoreResponse)
 async def create_admin_restore(
     restore_data: RestoreRequest,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -412,7 +412,7 @@ async def create_admin_restore(
 
 @router.get("/health", response_model=SystemHealth)
 async def get_admin_system_health(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -450,7 +450,7 @@ async def get_admin_system_health(
 @router.put("/config", response_model=SystemConfig)
 async def update_admin_system_config(
     config_data: SystemConfig,
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -495,7 +495,7 @@ async def export_admin_data(
     format: str = Path(..., pattern="^(json|csv|xml|pdf)$"),
     data_type: str = Query(..., pattern="^(all|users|memories|contexts|relations)$"),
     include_sensitive: bool = Query(False),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -554,7 +554,7 @@ async def cleanup_admin_data(
     dry_run: bool = Query(True),
     data_type: Optional[str] = Query(None, pattern="^(all|memories|contexts|relations)$"),
     older_than_days: Optional[int] = Query(None, ge=1),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -599,7 +599,7 @@ async def cleanup_admin_data(
 # Maintenance Operations
 @router.post("/maintenance/reindex")
 async def reindex_admin_data(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -635,7 +635,7 @@ async def reindex_admin_data(
 
 @router.post("/maintenance/analyze")
 async def analyze_admin_data(
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -672,7 +672,7 @@ async def analyze_admin_data(
 @router.post("/maintenance/upgrade")
 async def upgrade_admin_system(
     version: str = Body(..., min_length=1),
-    db: EnhancedMemoryDB = Depends(get_enhanced_db),
+    db: RefactoredMemoryDB = Depends(get_enhanced_db),
     current_user: User = Depends(get_current_user)
 ):
     """

@@ -194,9 +194,9 @@ class BaselineCollector:
     def _collect_search_metrics(self) -> Dict[str, Any]:
         """Collect search performance metrics."""
         try:
-            from ..database.enhanced_memory_db import EnhancedMemoryDB
-            
-            db_manager = EnhancedMemoryDB("sqlite:///:memory:")
+            from ..database.refactored_memory_db import RefactoredMemoryDB
+
+            db_manager = RefactoredMemoryDB(db_url="sqlite:///:memory:")
             times = []
             
             # Test search with various queries

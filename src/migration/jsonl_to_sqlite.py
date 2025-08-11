@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert
 
 from ...database.models import Base, User, Context, Memory, Relation
-from ...database.enhanced_memory_db import EnhancedMemoryDB
+from ...database.refactored_memory_db import RefactoredMemoryDB
 from ...utils.error_handling import MigrationError, handle_migration_error
 from ...utils.crypto import decrypt_data, encrypt_data
 
@@ -53,7 +53,7 @@ class JSONLToSQLiteMigrator:
         """
         # Initialize database
         database_url = f"sqlite+aiosqlite:///{self.sqlite_data_path}/memory.db"
-        self.db = EnhancedMemoryDB(database_url=database_url)
+        self.db = RefactoredMemoryDB(db_url=database_url)
         await self.db.initialize()
         
         # Create tables
