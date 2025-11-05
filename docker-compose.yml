@@ -1,4 +1,20 @@
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
   api-server:
     build: .
     ports:
@@ -12,8 +28,18 @@ services:
       - API_HOST=0.0.0.0
       - API_PORT=8002
       - JSONL_DATA_PATH=./data/jsonl/
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_ENABLED=true
+      - CHROMA_ENABLED=true
+      - CHROMA_PERSIST_DIRECTORY=./data/chroma
+      - VECTOR_SEARCH_ENABLED=true
+      - EMBEDDING_PROVIDER=local
     restart: unless-stopped
     command: ["python", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8002"]
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - mcp-network
 
@@ -26,12 +52,26 @@ services:
       - DATABASE_URL=sqlite:///./data/sqlite/memory.db
       - LOG_LEVEL=INFO
       - JSONL_DATA_PATH=./data/jsonl/
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_ENABLED=true
+      - CHROMA_ENABLED=true
+      - CHROMA_PERSIST_DIRECTORY=./data/chroma
+      - VECTOR_SEARCH_ENABLED=true
+      - EMBEDDING_PROVIDER=local
     restart: unless-stopped
     stdin_open: true
     tty: true
     command: ["python", "src/mcp_stdio_server.py"]
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - mcp-network
+
+volumes:
+  redis-data:
+    driver: local
 
 networks:
   mcp-network:

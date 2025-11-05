@@ -41,10 +41,29 @@ class Settings(BaseSettings):
     
     # Embedding Model
     embedding_model: str = Field(default="all-MiniLM-L6-v2", env="EMBEDDING_MODEL")
-    
+    embedding_provider: str = Field(default="local", env="EMBEDDING_PROVIDER")  # "local" or "openai"
+    openai_api_key: Optional[str] = Field(default=None, env="OPENAI_API_KEY")
+    openai_embedding_model: str = Field(default="text-embedding-3-small", env="OPENAI_EMBEDDING_MODEL")
+    embedding_dimension: int = Field(default=384, env="EMBEDDING_DIMENSION")  # 384 for MiniLM, 1536 for OpenAI
+
+    # Chroma Vector Database
+    chroma_enabled: bool = Field(default=True, env="CHROMA_ENABLED")
+    chroma_persist_directory: str = Field(default="./data/chroma", env="CHROMA_PERSIST_DIRECTORY")
+    chroma_collection_name: str = Field(default="knowledge_base", env="CHROMA_COLLECTION_NAME")
+
+    # Redis Configuration
+    redis_enabled: bool = Field(default=True, env="REDIS_ENABLED")
+    redis_host: str = Field(default="localhost", env="REDIS_HOST")
+    redis_port: int = Field(default=6379, env="REDIS_PORT")
+    redis_db: int = Field(default=0, env="REDIS_DB")
+    redis_password: Optional[str] = Field(default=None, env="REDIS_PASSWORD")
+    redis_cache_ttl: int = Field(default=3600, env="REDIS_CACHE_TTL")  # 1 hour
+    redis_max_connections: int = Field(default=10, env="REDIS_MAX_CONNECTIONS")
+
     # Search Settings
     search_limit: int = Field(default=10, env="SEARCH_LIMIT")
     search_similarity_threshold: float = Field(default=0.5, env="SEARCH_SIMILARITY_THRESHOLD")
+    vector_search_enabled: bool = Field(default=True, env="VECTOR_SEARCH_ENABLED")
     
     # Logging
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
@@ -141,6 +160,36 @@ class Settings(BaseSettings):
             "enabled": self.rate_limit_enabled,
             "requests": self.rate_limit_requests,
             "window": self.rate_limit_window
+        }
+
+    def get_chroma_config(self) -> Dict[str, Any]:
+        """Get Chroma vector database configuration."""
+        return {
+            "enabled": self.chroma_enabled,
+            "persist_directory": self.chroma_persist_directory,
+            "collection_name": self.chroma_collection_name
+        }
+
+    def get_redis_config(self) -> Dict[str, Any]:
+        """Get Redis configuration."""
+        return {
+            "enabled": self.redis_enabled,
+            "host": self.redis_host,
+            "port": self.redis_port,
+            "db": self.redis_db,
+            "password": self.redis_password,
+            "cache_ttl": self.redis_cache_ttl,
+            "max_connections": self.redis_max_connections
+        }
+
+    def get_embedding_config(self) -> Dict[str, Any]:
+        """Get embedding configuration."""
+        return {
+            "provider": self.embedding_provider,
+            "model": self.embedding_model,
+            "openai_api_key": self.openai_api_key,
+            "openai_model": self.openai_embedding_model,
+            "dimension": self.embedding_dimension
         }
 
 @lru_cache()

@@ -19,3 +19,11 @@ xxhash
 spacy
 email-validator
 python-multipart
+
+# Vector Search & Embeddings
+chromadb>=0.4.22
+sentence-transformers>=2.2.2
+openai>=1.0.0
+
+# Additional caching
+redis[hiredis]>=5.0.0
