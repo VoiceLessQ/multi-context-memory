@@ -35,6 +35,17 @@ services:
       - CHROMA_PERSIST_DIRECTORY=./data/chroma
       - VECTOR_SEARCH_ENABLED=true
       - EMBEDDING_PROVIDER=local
+      # Security Configuration - REQUIRED in production
+      # Generate secure keys with: python -c 'import secrets; print(secrets.token_urlsafe(32))'
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
+      - API_SECRET_KEY=${API_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      # Email Configuration (optional - only if email features are used)
+      - EMAIL_HOST=${EMAIL_HOST:-}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
+      - APP_BASE_URL=${APP_BASE_URL:-http://localhost:8002}
     restart: unless-stopped
     command: ["python", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8002"]
     depends_on:
@@ -59,6 +70,9 @@ services:
       - CHROMA_PERSIST_DIRECTORY=./data/chroma
       - VECTOR_SEARCH_ENABLED=true
       - EMBEDDING_PROVIDER=local
+      # Security Configuration - REQUIRED in production
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
+      - API_SECRET_KEY=${API_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
     restart: unless-stopped
     stdin_open: true
     tty: true
