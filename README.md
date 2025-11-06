@@ -863,7 +863,35 @@ result = await mcp_client.call_tool("ingest_knowledge", {
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+**📚 Full Troubleshooting Guide**: See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for comprehensive solutions.
+
+**📦 Installation Guide**: See [INSTALL.md](./INSTALL.md) for detailed installation instructions.
+
+**🔧 Quick Diagnostics**:
+```bash
+# Run health check
+./scripts/health_check.sh
+
+# Run connection verification
+docker exec mcp-multi-context-memory-memory-server-1 python scripts/verify_mcp_connection.py
+```
+
+### Common Issues (Quick Reference)
+
+#### 0. MCP Connection - Zod Validation Error (FIXED 2025-11-06)
+
+**Error**: `Expected string, received null` in JSON-RPC responses
+
+**Status**: ✅ **FIXED** in latest version
+
+**Solution**: Update to latest version:
+```bash
+git pull origin main
+docker-compose down
+docker-compose up -d --build
+```
+
+See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#issue-1-zod-validation-error) for details.
 
 #### 1. Docker Build Fails - Missing Dockerfile
 

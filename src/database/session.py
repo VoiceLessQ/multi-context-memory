@@ -25,12 +25,13 @@ from contextlib import contextmanager
 # Settings import removed due to relative import issues
 
 # Get settings
+import os
 # settings = get_settings()
 settings = type('Settings', (), {
-    'database_url': 'sqlite:///./memory.db',
-    'debug': False,
-    'max_connections': 10,
-    'query_timeout': 30
+    'database_url': os.getenv('DATABASE_URL', 'sqlite:///./data/sqlite/memory.db'),
+    'debug': os.getenv('DEBUG', 'false').lower() == 'true',
+    'max_connections': int(os.getenv('MAX_CONNECTIONS', '10')),
+    'query_timeout': int(os.getenv('QUERY_TIMEOUT', '30'))
 })()
 
 # Create SQLAlchemy engine

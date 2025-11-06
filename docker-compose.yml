@@ -43,15 +43,23 @@ services:
       - EMBEDDING_PROVIDER=local
       # Security Configuration - REQUIRED in production
       # Generate secure keys with: python -c 'import secrets; print(secrets.token_urlsafe(32))'
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
-      - API_SECRET_KEY=${API_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
+      - SECRET_KEY=${SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
+      - ALGORITHM=${ALGORITHM:-HS256}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
-      # Email Configuration (optional - only if email features are used)
-      - EMAIL_HOST=${EMAIL_HOST:-}
-      - EMAIL_PORT=${EMAIL_PORT:-587}
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER:-}
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD:-}
-      - APP_BASE_URL=${APP_BASE_URL:-http://localhost:8002}
+      # Application Configuration
+      - APP_NAME=${APP_NAME:-"MCP Multi-Context Memory"}
+      - APP_VERSION=${APP_VERSION:-"2.0.0"}
+      - DEBUG=${DEBUG:-false}
+      # CORS Configuration
+      - CORS_ORIGINS=${CORS_ORIGINS:-["*"]}
+      # Cache and Performance Configuration
+      - CACHE_ENABLED=${CACHE_ENABLED:-true}
+      - CACHE_TTL=${CACHE_TTL:-3600}
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-true}
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS:-100}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW:-60}
+      - MAX_CONNECTIONS=${MAX_CONNECTIONS:-10}
+      - QUERY_TIMEOUT=${QUERY_TIMEOUT:-30}
     restart: unless-stopped
     command: ["python", "-m", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8002"]
     depends_on:
@@ -77,8 +85,22 @@ services:
       - VECTOR_SEARCH_ENABLED=true
       - EMBEDDING_PROVIDER=local
       # Security Configuration - REQUIRED in production
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
-      - API_SECRET_KEY=${API_SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
+      - SECRET_KEY=${SECRET_KEY:-CHANGE_ME_IN_PRODUCTION}
+      - ALGORITHM=${ALGORITHM:-HS256}
+      # Application Configuration
+      - APP_NAME=${APP_NAME:-"MCP Multi-Context Memory"}
+      - APP_VERSION=${APP_VERSION:-"2.0.0"}
+      - DEBUG=${DEBUG:-false}
+      # CORS Configuration
+      - CORS_ORIGINS=${CORS_ORIGINS:-["*"]}
+      # Cache and Performance Configuration
+      - CACHE_ENABLED=${CACHE_ENABLED:-true}
+      - CACHE_TTL=${CACHE_TTL:-3600}
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-true}
+      - RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS:-100}
+      - RATE_LIMIT_WINDOW=${RATE_LIMIT_WINDOW:-60}
+      - MAX_CONNECTIONS=${MAX_CONNECTIONS:-10}
+      - QUERY_TIMEOUT=${QUERY_TIMEOUT:-30}
     restart: unless-stopped
     stdin_open: true
     tty: true

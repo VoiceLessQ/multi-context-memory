@@ -186,28 +186,28 @@ class MCPRequestProcessor:
     
     async def process_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Process an MCP request and return response."""
+        request_id = request.get("id", "unknown")
         try:
             method = request.get("method")
             params = request.get("params", {})
-            request_id = request.get("id")
-            
+
             if method not in self.request_handlers:
                 raise ValueError(f"Unknown method: {method}")
-            
+
             handler = self.request_handlers[method]
             result = await handler(params)
-            
+
             return {
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "result": result
             }
-            
+
         except Exception as e:
             logger.error(f"Error processing request: {e}")
             return {
                 "jsonrpc": "2.0",
-                "id": request.get("id"),
+                "id": request_id,
                 "error": {
                     "code": -32000,
                     "message": str(e)
@@ -349,24 +349,26 @@ class RefactoredMCPStdioServer:
                 if not line:
                     continue
                 
+                request = None
                 try:
                     # Parse JSON request
                     request = json.loads(line)
                     logger.info(f"Received request: {request.get('method')}")
-                    
+
                     # Process request through the system
                     response = await self.request_processor.process_request(request)
-                    
+
                     # Send JSON response to stdout
                     print(json.dumps(response, default=str), flush=True)
-                    
+
                 except json.JSONDecodeError as e:
                     logger.error(f"Invalid JSON: {e}")
                     self._send_parse_error()
-                    
+
                 except Exception as e:
                     logger.error(f"Request processing error: {e}")
-                    self._send_internal_error()
+                    request_id = request.get("id") if request else None
+                    self._send_internal_error(request_id)
                     
         except KeyboardInterrupt:
             logger.info("Server interrupted by user")
@@ -375,11 +377,11 @@ class RefactoredMCPStdioServer:
         finally:
             await self._shutdown()
     
-    def _send_parse_error(self):
+    def _send_parse_error(self, request_id=None):
         """Send JSON parse error response."""
         error_response = {
             "jsonrpc": "2.0",
-            "id": None,
+            "id": request_id if request_id is not None else "unknown",
             "error": {
                 "code": -32700,
                 "message": "Parse error"
@@ -387,11 +389,11 @@ class RefactoredMCPStdioServer:
         }
         print(json.dumps(error_response), flush=True)
     
-    def _send_internal_error(self):
+    def _send_internal_error(self, request_id=None):
         """Send internal error response."""
         error_response = {
             "jsonrpc": "2.0",
-            "id": None,
+            "id": request_id if request_id is not None else "unknown",
             "error": {
                 "code": -32603,
                 "message": "Internal error"

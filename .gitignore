@@ -17,6 +17,11 @@ env/
 venv/
 ENV/
 
+# === IDE and Editor Settings ===
+.claude/
+.vscode/
+.idea/
+
 # === Environment Variables ===
 .env.local
 .env.production
@@ -85,6 +90,9 @@ check_*.py
 debug_*.py
 test_diagnostic_*.py
 diagnostic_*.log
+test_db_connection.py
+kilo-mcp-server.py
+INSTALLATION_COMPLETED.md
 
 # === Temporary Analysis Files ===
 *_ANALYSIS_TEMP.md
