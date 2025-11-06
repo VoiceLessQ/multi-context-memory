@@ -1194,11 +1194,16 @@ Built on the shoulders of giants in the AI and developer tools space.
 - **GitHub Discussions**: [Ask questions](https://github.com/VoiceLessQ/multi-context-memory/discussions)
 - **Pull Requests**: [Contribute code](https://github.com/VoiceLessQ/multi-context-memory/pulls)
 
-### Professional Support
+### Community Support
 
-For enterprise deployments, consulting, or custom development:
-- Open a GitHub issue with the `enterprise` label
-- Or contact through GitHub profile
+This is an open-source project maintained by the community.
+
+**Note**: Professional support and consulting services are not currently available.
+
+For help and support:
+- **Bug Reports**: Open an issue with detailed information
+- **Feature Requests**: Discuss in GitHub Discussions first
+- **General Questions**: Check documentation and existing issues
 
 ---
 
