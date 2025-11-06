@@ -5,7 +5,7 @@
 A production-ready Model Context Protocol (MCP) server implementation featuring advanced memory management, semantic search, and knowledge graph capabilities for AI development tools.
 
 [![Production Ready](https://img.shields.io/badge/status-production--ready-green)]()
-[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-17-blue)]()
+[![MCP Tools](https://img.shields.io/badge/MCP%20Tools-19-blue)]()
 [![Performance](https://img.shields.io/badge/performance-10--100x%20faster-brightgreen)]()
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -45,7 +45,7 @@ The **MCP Multi-Context Memory System** is an advanced memory management and kno
 
 🎯 **Focused**: Purpose-built for MCP integration with Kilo Code and similar tools
 
-📦 **Complete**: 17 fully functional MCP tools ready to use
+📦 **Complete**: 19 fully functional MCP tools ready to use
 
 🔒 **Secure**: Enterprise-grade authentication and access control (configuration required)
 
@@ -71,7 +71,7 @@ The **MCP Multi-Context Memory System** is an advanced memory management and kno
 | Feature | Description | Status |
 |---------|-------------|--------|
 | **Embeddings** | Local (free) or OpenAI embeddings | ✅ Operational |
-| **Book Ingestion** | Parse and store books by chapters | ✅ Operational |
+| **Knowledge Ingestion** | Ingest and index knowledge content | ✅ Operational |
 | **Compression** | Automatic content compression for large memories | ✅ Operational |
 | **Versioning** | Track memory changes over time | ✅ Schema Ready |
 | **Authentication** | JWT-based user authentication | ⚠️ Needs Configuration |
@@ -89,7 +89,7 @@ The **MCP Multi-Context Memory System** is an advanced memory management and kno
 
 #### What's Working Perfectly ✅
 
-- ✅ **17 MCP Tools**: All core memory operations functional
+- ✅ **19 MCP Tools**: All core memory operations functional
 - ✅ **1 MCP Resource**: Memory summary resource available
 - ✅ **Vector Search**: ChromaDB integration with 10-100x speedup
 - ✅ **Redis Caching**: High-performance caching layer operational
@@ -99,7 +99,7 @@ The **MCP Multi-Context Memory System** is an advanced memory management and kno
 - ✅ **Knowledge Graph**: Relationship management and analytics
 - ✅ **Bulk Operations**: Efficient batch memory and relation creation
 - ✅ **Content Analytics**: Automatic categorization and summarization
-- ✅ **Book Ingestion**: Parse and store books by chapters
+- ✅ **Knowledge Ingestion**: Ingest and index knowledge content
 - ✅ **Handler Chain**: Clean, modular MCP tool architecture
 
 #### In Development ⚠️
@@ -216,7 +216,7 @@ Configure in your MCP settings (e.g., `~/.kilo/mcp.json`):
 ```
 
 **Verify Connection:**
-- ✅ Tools: 17
+- ✅ Tools: 19
 - ✅ Resources: 1
 - ✅ Errors: 0
 
@@ -334,8 +334,6 @@ multi-context-memory/
 | Tool | Description | Performance | Status |
 |------|-------------|-------------|--------|
 | `create_context` | Organize memories into contexts | < 100ms | ✅ Working |
-| `get_context` | Retrieve context information | < 50ms | ✅ Working |
-| `list_contexts` | List all available contexts | < 100ms | ✅ Working |
 
 ### Relationship Intelligence
 
@@ -361,12 +359,14 @@ multi-context-memory/
 | `summarize_memory` | Intelligent memory summarization | < 400ms | ✅ Working |
 | `categorize_memories` | Auto-categorization with tagging | < 300ms | ✅ Working |
 
-### System Management
+### Knowledge Management
 
 | Tool | Description | Performance | Status |
 |------|-------------|-------------|--------|
 | `get_memory_statistics` | Comprehensive system statistics | < 200ms | ✅ Working |
-| `ingest_book` | Parse and store book by chapters | 5-30s | ✅ Working |
+| `ingest_knowledge` | Ingest and index knowledge content | 5-30s | ✅ Working |
+| `index_knowledge_batch` | Batch knowledge indexing | 100+ items/s | ✅ Working |
+| `find_similar_knowledge` | Find semantically similar content | 100-300ms | ✅ Working |
 
 ### Resources
 
@@ -374,7 +374,7 @@ multi-context-memory/
 |----------|-------------|------------------|--------|
 | `memory://summary` | Real-time memory count and stats | On-demand | ✅ Working |
 
-**Total: 17 Working MCP Tools + 1 Resource**
+**Total: 19 Working MCP Tools + 1 Resource**
 
 ---
 
@@ -848,11 +848,12 @@ relations = await mcp_client.call_tool("bulk_create_relations", {
 })
 ```
 
-#### Ingest Book
+#### Ingest Knowledge
 
 ```python
-result = await mcp_client.call_tool("ingest_book", {
-    "book_path": "/path/to/book.txt",
+result = await mcp_client.call_tool("ingest_knowledge", {
+    "content": "Your knowledge content here...",
+    "title": "Knowledge Title",
     "context_id": 1,
     "index_to_vector_store": True  # Enables semantic search
 })
@@ -997,7 +998,7 @@ curl http://localhost:8002/api/v1/admin/stats
 - ✅ High-performance vector search with ChromaDB (10-100x speedup)
 - ✅ Redis caching layer for query optimization
 - ✅ Local embeddings with sentence-transformers
-- ✅ 17 fully functional MCP tools
+- ✅ 19 fully functional MCP tools
 - ✅ Handler chain refactoring
 - ✅ Docker multi-service architecture
 - ✅ Comprehensive documentation
