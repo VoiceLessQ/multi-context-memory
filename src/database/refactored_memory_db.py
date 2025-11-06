@@ -1051,13 +1051,13 @@ class RefactoredMemoryDB:
                 memory = await self.memory_repository.find_by_id(memory_id)
                 if not memory:
                     return {"error": f"Memory with ID {memory_id} not found"}
-                    
+
                 memories = [memory]
-                relations = await self.relation_repository.find_by_memory_id(memory_id)
+                relations = self.relation_repository.find_by_memory_id(memory_id)
             else:
                 # Get all memories and relations
                 memories = await self.memory_repository.find_by_criteria({})
-                relations = await self.relation_repository.find_all()
+                relations = self.relation_repository.find_all()
             
             analysis_result = {}
             
@@ -1205,13 +1205,48 @@ class RefactoredMemoryDB:
                 logger.error("Memory repository not initialized")
                 return {"error": "Memory repository not initialized"}
             
-            # Read book file (placeholder - in real implementation, use proper file reading)
+            # Read book file
+            import os
+
             try:
-                with open(book_path, 'r', encoding='utf-8') as file:
-                    book_content = file.read()
+                # Convert to absolute path if relative
+                if not os.path.isabs(book_path):
+                    book_path = os.path.abspath(book_path)
+
+                # Check if file exists
+                if not os.path.exists(book_path):
+                    error_msg = f"File not found: {book_path}"
+                    logger.error(error_msg)
+                    return {"error": error_msg}
+
+                # Check if it's a file (not a directory)
+                if not os.path.isfile(book_path):
+                    error_msg = f"Path is not a file: {book_path}"
+                    logger.error(error_msg)
+                    return {"error": error_msg}
+
+                # Try reading with utf-8, fall back to other encodings if needed
+                encodings = ['utf-8', 'latin-1', 'cp1252']
+                book_content = None
+                last_error = None
+
+                for encoding in encodings:
+                    try:
+                        with open(book_path, 'r', encoding=encoding) as file:
+                            book_content = file.read()
+                        break
+                    except UnicodeDecodeError as e:
+                        last_error = e
+                        continue
+
+                if book_content is None:
+                    error_msg = f"Could not decode file with any supported encoding: {last_error}"
+                    logger.error(error_msg)
+                    return {"error": error_msg}
+
             except Exception as e:
                 logger.error(f"Error reading book file: {e}")
-                return {"error": f"Error reading book file: {str(e)}"}
+                return {"error": f"Error reading book file: {str(e)}", "file_path": book_path}
             
             # Simple chapter parsing (split by common chapter markers)
             import re

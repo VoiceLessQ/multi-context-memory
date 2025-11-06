@@ -75,7 +75,9 @@ archive/
 config/
 
 # === Data Files ===
-data/jsonl/
+# Ignore entire data directory (contains user data, databases, vector stores)
+data/
+!data/.gitkeep
 *.jsonl
 
 # === Cache ===
