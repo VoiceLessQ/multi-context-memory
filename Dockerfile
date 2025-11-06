@@ -1,4 +1,8 @@
-# Multi-Context Memory System Dockerfile
+# MCP Multi-Context Memory System - Dockerfile
+# Copyright (c) 2024 VoiceLessQ
+# https://github.com/VoiceLessQ/multi-context-memory
+# Licensed under MIT License - See LICENSE file
+# Project Fingerprint: 7a8f9b3c-mcpmem-voicelessq-2024
 # Production-ready Python 3.11 container with all dependencies
 FROM python:3.11-slim
 

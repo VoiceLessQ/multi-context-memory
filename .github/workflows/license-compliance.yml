@@ -1,0 +1,105 @@
+# MCP Multi-Context Memory System - License Compliance
+# Copyright (c) 2024 VoiceLessQ
+# Project Fingerprint: 7a8f9b3c-mcpmem-voicelessq-2024
+
+name: License Compliance Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  license-check:
+    name: Check License Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install pip-licenses
+      run: |
+        pip install --upgrade pip
+        pip install pip-licenses
+
+    - name: Install project dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Generate license report
+      run: |
+        echo "Generating license report..."
+        pip-licenses --format=markdown --output-file=licenses-report.md
+        cat licenses-report.md
+
+    - name: Check for GPL conflicts
+      run: |
+        echo "Checking for GPL-licensed dependencies..."
+
+        # Check if any GPL-licensed packages are in use
+        if pip-licenses --format=csv | grep -i "gpl"; then
+          echo "::warning::Found GPL-licensed dependencies. Review for MIT compatibility."
+        else
+          echo "✅ No GPL dependencies found"
+        fi
+
+    - name: Upload license report
+      uses: actions/upload-artifact@v3
+      with:
+        name: license-report
+        path: licenses-report.md
+
+  verify-mit-license:
+    name: Verify MIT License Terms
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Verify LICENSE file
+      run: |
+        if [ ! -f "LICENSE" ]; then
+          echo "::error::LICENSE file not found"
+          exit 1
+        fi
+
+        if ! grep -q "MIT License" LICENSE; then
+          echo "::error::Not a valid MIT License"
+          exit 1
+        fi
+
+        if ! grep -q "VoiceLessQ" LICENSE; then
+          echo "::error::Copyright holder not specified correctly"
+          exit 1
+        fi
+
+        echo "✅ MIT License verified"
+
+  protect-license-files:
+    name: Protect License Files from Removal
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Check if LICENSE or NOTICE was deleted
+      run: |
+        # Check if LICENSE or NOTICE files were deleted in this commit
+        if git diff --name-status HEAD~1 HEAD | grep -E "^D.*(LICENSE|NOTICE)"; then
+          echo "::error::LICENSE or NOTICE file was deleted! This is not allowed."
+          exit 1
+        fi
+
+        echo "✅ License files intact"

@@ -93,7 +93,7 @@ temp_analysis/
 # === Analysis Reports ===
 code_analysis_report.md
 
-# === Documentation Files ===
+# === Temporary Documentation Files ===
 BOOK_STORAGE_PLAN.md
-README.md
-CHANGELOG.md
+# README.md - TRACKED (needed for project identity)
+# CHANGELOG.md - TRACKED (needed for version history)

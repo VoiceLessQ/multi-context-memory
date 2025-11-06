@@ -1,3 +1,8 @@
+# MCP Multi-Context Memory System - Dependencies
+# Copyright (c) 2024 VoiceLessQ
+# https://github.com/VoiceLessQ/multi-context-memory
+# Project Fingerprint: 7a8f9b3c-mcpmem-voicelessq-2024
+
 fastapi
 uvicorn[standard]
 sqlalchemy
