@@ -214,14 +214,21 @@ class VectorStoreService:
             query_embedding=query_embedding
         )
 
-        # Convert distances to similarity scores (1 - distance for cosine)
+        # Convert distances to similarity scores
+        # ChromaDB uses L2 (Euclidean) distance by default
+        # For normalized embeddings: distance = sqrt(2*(1-cosine_similarity))
+        # Therefore: cosine_similarity = 1 - (distance^2 / 2)
+        # But we use a simpler formula: similarity = 1 / (1 + distance)
         scored_results = []
         for i in range(results["count"]):
             doc = results["documents"][i]
             metadata = results["metadatas"][i]
             distance = results["distances"][i]
-            # Convert distance to similarity score (0-1 range)
-            similarity = 1.0 - distance if distance < 1.0 else 0.0
+
+            # Convert L2 distance to similarity score (0-1 range)
+            # Lower distance = higher similarity
+            similarity = 1.0 / (1.0 + distance)
+
             scored_results.append((doc, metadata, similarity))
 
         return scored_results

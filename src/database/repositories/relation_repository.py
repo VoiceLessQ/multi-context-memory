@@ -40,10 +40,10 @@ class RelationRepository:
             self.session.rollback()
             raise
     
-    async def find_by_id(self, relation_id: int) -> Optional[Relation]:
+    def find_by_id(self, relation_id: int) -> Optional[Relation]:
         """Find a relation by ID."""
         try:
-            result = await self.session.execute(
+            result = self.session.execute(
                 select(Relation).where(Relation.id == relation_id)
             )
             return result.scalar_one_or_none()
@@ -51,10 +51,10 @@ class RelationRepository:
             logger.error(f"Error finding relation by ID {relation_id}: {e}")
             return None
     
-    async def find_by_memory_id(self, memory_id: int) -> List[Relation]:
+    def find_by_memory_id(self, memory_id: int) -> List[Relation]:
         """Find all relations for a specific memory (as source or target)."""
         try:
-            result = await self.session.execute(
+            result = self.session.execute(
                 select(Relation).where(
                     or_(
                         Relation.source_memory_id == memory_id,
@@ -67,10 +67,10 @@ class RelationRepository:
             logger.error(f"Error finding relations for memory {memory_id}: {e}")
             return []
     
-    async def find_by_source_memory(self, source_memory_id: int) -> List[Relation]:
+    def find_by_source_memory(self, source_memory_id: int) -> List[Relation]:
         """Find all relations where the memory is the source."""
         try:
-            result = await self.session.execute(
+            result = self.session.execute(
                 select(Relation).where(Relation.source_memory_id == source_memory_id)
             )
             return result.scalars().all()
@@ -78,41 +78,41 @@ class RelationRepository:
             logger.error(f"Error finding relations for source memory {source_memory_id}: {e}")
             return []
     
-    async def find_by_target_memory(self, target_memory_id: int) -> List[Relation]:
+    def find_by_target_memory(self, target_memory_id: int) -> List[Relation]:
         """Find all relations where the memory is the target."""
         try:
-            result = await self.session.execute(
+            result = self.session.execute(
                 select(Relation).where(Relation.target_memory_id == target_memory_id)
             )
             return result.scalars().all()
         except Exception as e:
             logger.error(f"Error finding relations for target memory {target_memory_id}: {e}")
             return []
-    
-    async def find_by_name(self, name: str) -> List[Relation]:
+
+    def find_by_name(self, name: str) -> List[Relation]:
         """Find all relations with a specific name."""
         try:
-            result = await self.session.execute(
+            result = self.session.execute(
                 select(Relation).where(Relation.name == name)
             )
             return result.scalars().all()
         except Exception as e:
             logger.error(f"Error finding relations with name {name}: {e}")
             return []
-    
-    async def find_all(self) -> List[Relation]:
+
+    def find_all(self) -> List[Relation]:
         """Find all relations."""
         try:
-            result = await self.session.execute(select(Relation))
+            result = self.session.execute(select(Relation))
             return result.scalars().all()
         except Exception as e:
             logger.error(f"Error finding all relations: {e}")
             return []
     
-    async def find_by_strength_range(self, min_strength: float, max_strength: float) -> List[Relation]:
+    def find_by_strength_range(self, min_strength: float, max_strength: float) -> List[Relation]:
         """Find all relations with strength in the specified range."""
         try:
-            result = await self.session.execute(
+            result = self.session.execute(
                 select(Relation).where(
                     and_(
                         Relation.strength >= min_strength,
@@ -124,8 +124,8 @@ class RelationRepository:
         except Exception as e:
             logger.error(f"Error finding relations with strength range {min_strength}-{max_strength}: {e}")
             return []
-    
-    async def update(self, relation: Relation) -> Optional[Relation]:
+
+    def update(self, relation: Relation) -> Optional[Relation]:
         """Update an existing relation."""
         try:
             self.session.commit()
@@ -135,14 +135,14 @@ class RelationRepository:
             logger.error(f"Error updating relation {relation.id}: {e}")
             self.session.rollback()
             return None
-    
-    async def delete(self, relation_id: int) -> bool:
+
+    def delete(self, relation_id: int) -> bool:
         """Delete a relation by ID."""
         try:
-            relation = await self.find_by_id(relation_id)
+            relation = self.find_by_id(relation_id)
             if not relation:
                 return False
-            
+
             self.session.delete(relation)
             self.session.commit()
             return True
@@ -150,37 +150,37 @@ class RelationRepository:
             logger.error(f"Error deleting relation {relation_id}: {e}")
             self.session.rollback()
             return False
-    
-    async def count(self) -> int:
+
+    def count(self) -> int:
         """Count total number of relations."""
         try:
-            result = await self.session.execute(select(Relation))
+            result = self.session.execute(select(Relation))
             return len(result.scalars().all())
         except Exception as e:
             logger.error(f"Error counting relations: {e}")
             return 0
     
-    async def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> Dict[str, Any]:
         """Get relation statistics."""
         try:
             # Total relations
-            total_relations = await self.count()
-            
+            total_relations = self.count()
+
             # Relation type distribution
             relation_types = {}
-            all_relations = await self.session.execute(select(Relation))
+            all_relations = self.session.execute(select(Relation))
             for relation in all_relations.scalars().all():
                 rel_name = relation.name or "unknown"
                 relation_types[rel_name] = relation_types.get(rel_name, 0) + 1
-            
+
             # Strength distribution
             strength_ranges = {
                 "weak": 0,      # 0.0 - 0.3
                 "medium": 0,    # 0.3 - 0.7
                 "strong": 0     # 0.7 - 1.0
             }
-            
-            all_relations = await self.session.execute(select(Relation))
+
+            all_relations = self.session.execute(select(Relation))
             for relation in all_relations.scalars().all():
                 strength = relation.strength or 0.0
                 if strength < 0.3:
@@ -189,10 +189,10 @@ class RelationRepository:
                     strength_ranges["medium"] += 1
                 else:
                     strength_ranges["strong"] += 1
-            
+
             # Memory participation (how many memories have relations)
             from sqlalchemy import func
-            memory_counts = await self.session.execute(
+            memory_counts = self.session.execute(
                 select(
                     func.count(func.distinct(Relation.source_memory_id)).label("source_memories"),
                     func.count(func.distinct(Relation.target_memory_id)).label("target_memories")
@@ -201,7 +201,7 @@ class RelationRepository:
             row = memory_counts.fetchone()
             source_memories = row[0] if row else 0
             target_memories = row[1] if row else 0
-            
+
             return {
                 "total_relations": total_relations,
                 "relation_type_distribution": relation_types,
@@ -209,7 +209,7 @@ class RelationRepository:
                 "memories_with_relations": max(source_memories, target_memories),
                 "average_relations_per_memory": total_relations / max(source_memories, 1)
             }
-            
+
         except Exception as e:
             logger.error(f"Error getting relation statistics: {e}")
             return {}

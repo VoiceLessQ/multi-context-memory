@@ -1541,10 +1541,10 @@ class RefactoredMemoryDB:
     async def get_memory_relations(self, memory_id: int, **kwargs) -> List[Dict[str, Any]]:
         """
         Get all relations for a specific memory.
-        
+
         Args:
             memory_id: Memory ID to get relations for
-            
+
         Returns:
             List of relation dictionaries
         """
@@ -1552,9 +1552,9 @@ class RefactoredMemoryDB:
             if not self.relation_repository:
                 logger.error("Relation repository not initialized")
                 return []
-                
-            relations = await self.relation_repository.find_by_memory_id(memory_id)
-            
+
+            relations = self.relation_repository.find_by_memory_id(memory_id)
+
             # Convert to dictionaries for JSON serialization
             result = []
             for relation in relations:
@@ -1567,9 +1567,9 @@ class RefactoredMemoryDB:
                     "relation_metadata": relation.relation_metadata or {},
                     "created_at": relation.created_at.isoformat() if relation.created_at else None
                 })
-            
+
             return result
-                
+
         except Exception as e:
             logger.error(f"Error getting memory relations: {e}")
             return []

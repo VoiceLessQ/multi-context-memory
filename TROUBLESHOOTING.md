@@ -452,7 +452,43 @@ docker-compose exec memory-server \
 
 ## Vector Search Issues
 
-### Issue 11: ChromaDB Permission Issues
+### Issue 11: Semantic Search Returns Empty Results (FIXED 2025-11-06)
+
+**Symptoms**:
+- `search_semantic` returns 0 results
+- `find_similar_knowledge` returns no matches
+- Vector store is empty or has compressed data
+
+**Cause**: Memories were not indexed to ChromaDB, or were indexed with compressed content.
+
+**Solution** (Fixed in latest version):
+
+```bash
+# Run the indexing script to populate vector store
+docker exec mcp-multi-context-memory-memory-server-1 python scripts/index_existing_memories.py
+
+# Expected output:
+# ✅ SUCCESS! Indexed 34 memories
+# Semantic search is now active!
+```
+
+**What this script does**:
+- Fetches all memories from SQLite
+- Decompresses content if compressed
+- Indexes uncompressed content to ChromaDB
+- Enables semantic search functionality
+
+**When to run**:
+- After initial installation
+- After importing memories from another system
+- If semantic search stops working
+- After clearing ChromaDB data
+
+**Note**: Newly created memories are automatically indexed. This script is only needed for existing memories.
+
+---
+
+### Issue 12: ChromaDB Permission Issues
 
 **Error Message**:
 ```
