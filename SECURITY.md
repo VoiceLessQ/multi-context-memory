@@ -133,6 +133,34 @@ Before deploying to production:
 
 If you discover a security vulnerability, please report it to the repository maintainers. Do not create public issues for security vulnerabilities.
 
+Contact: GitHub @VoiceLessQ or open a private security advisory on GitHub.
+
+## Reporting Copyright Violations & Code Theft
+
+This project is protected by copyright and licensed under MIT License.
+Copyright (c) 2024 VoiceLessQ
+
+If you discover unauthorized use, copyright violations, or code theft:
+
+1. **What constitutes a violation:**
+   - Removal of copyright notices or attribution
+   - Claiming authorship of this code
+   - Distribution without including LICENSE and NOTICE files
+   - Using project name or branding without permission
+
+2. **How to report:**
+   - Contact: GitHub @VoiceLessQ
+   - Open an issue: https://github.com/VoiceLessQ/multi-context-memory/issues
+   - Include: URL of violation, screenshots, evidence
+
+3. **Project authentication:**
+   - Original repository: https://github.com/VoiceLessQ/multi-context-memory
+   - Copyright holder: VoiceLessQ
+   - Project fingerprint: 7a8f9b3c-mcpmem-voicelessq-2024
+   - First published: 2024
+
+Any repository claiming to be the "original" without this fingerprint and earlier commit history is unauthorized.
+
 ## Regular Security Maintenance
 
 1. Keep dependencies up to date:

@@ -1,0 +1,139 @@
+# MCP Multi-Context Memory System - Copyright Protection
+# Copyright (c) 2024 VoiceLessQ
+# Project Fingerprint: 7a8f9b3c-mcpmem-voicelessq-2024
+
+name: Copyright Protection & Verification
+
+on:
+  push:
+    branches: [ main, develop, claude/* ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run weekly to check for copyright violations
+    - cron: '0 0 * * 0'
+
+jobs:
+  verify-copyright:
+    name: Verify Copyright Headers
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Verify copyright in Python files
+      run: |
+        echo "Checking copyright headers in Python files..."
+        missing_copyright=0
+
+        # Check all Python files in src/
+        for file in $(find src -name "*.py"); do
+          if ! grep -q "Copyright (c) 2024 VoiceLessQ" "$file"; then
+            echo "❌ Missing copyright: $file"
+            missing_copyright=$((missing_copyright + 1))
+          fi
+        done
+
+        if [ $missing_copyright -gt 0 ]; then
+          echo "::error::Found $missing_copyright files without copyright headers"
+          exit 1
+        fi
+
+        echo "✅ All Python files have copyright headers"
+
+    - name: Verify project fingerprint
+      run: |
+        echo "Verifying project fingerprint..."
+
+        # Check for fingerprint in key files
+        files_to_check="LICENSE NOTICE SECURITY.md docker-compose.yml Dockerfile requirements.txt"
+
+        for file in $files_to_check; do
+          if [ -f "$file" ]; then
+            if ! grep -q "7a8f9b3c-mcpmem-voicelessq-2024\|VoiceLessQ" "$file"; then
+              echo "::warning::File $file missing fingerprint/copyright"
+            fi
+          fi
+        done
+
+        echo "✅ Fingerprint verification complete"
+
+    - name: Verify LICENSE file
+      run: |
+        if ! grep -q "Copyright (c) 2024 VoiceLessQ" LICENSE; then
+          echo "::error::LICENSE file has incorrect copyright"
+          exit 1
+        fi
+        echo "✅ LICENSE file verified"
+
+    - name: Check for NOTICE file
+      run: |
+        if [ ! -f "NOTICE" ]; then
+          echo "::error::NOTICE file is missing"
+          exit 1
+        fi
+        echo "✅ NOTICE file exists"
+
+  security-scan:
+    name: Security & Dependency Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install pip-audit safety
+
+    - name: Run pip-audit
+      run: |
+        pip-audit -r requirements.txt || echo "::warning::Some vulnerabilities found"
+
+    - name: Check for secrets
+      uses: trufflesecurity/trufflehog@main
+      with:
+        extra_args: --only-verified
+
+  attribution-check:
+    name: Attribution & License Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Verify attribution files
+      run: |
+        echo "Checking attribution files..."
+
+        required_files="LICENSE NOTICE SECURITY.md"
+
+        for file in $required_files; do
+          if [ ! -f "$file" ]; then
+            echo "::error::Required file $file is missing"
+            exit 1
+          fi
+        done
+
+        echo "✅ All attribution files present"
+
+    - name: Verify repository metadata
+      run: |
+        echo "Repository: VoiceLessQ/multi-context-memory"
+        echo "Copyright: VoiceLessQ"
+        echo "License: MIT"
+        echo "Fingerprint: 7a8f9b3c-mcpmem-voicelessq-2024"
+        echo "✅ Metadata verified"

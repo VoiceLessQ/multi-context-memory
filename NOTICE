@@ -1,0 +1,62 @@
+MCP Multi-Context Memory System
+Copyright (c) 2024 VoiceLessQ
+https://github.com/VoiceLessQ/multi-context-memory
+
+This project is licensed under the MIT License.
+See LICENSE file for full terms.
+
+================================================================================
+ATTRIBUTION REQUIREMENTS
+================================================================================
+
+If you use, modify, or distribute this software, you MUST:
+
+1. Include this NOTICE file in all copies or substantial portions
+2. Include the LICENSE file with the MIT license text
+3. Retain all copyright notices in source files
+4. Credit the original author: VoiceLessQ
+
+Example attribution in your project:
+    "This project uses MCP Multi-Context Memory System
+     Copyright (c) 2024 VoiceLessQ
+     Licensed under MIT License"
+
+================================================================================
+PROJECT FINGERPRINT
+================================================================================
+
+Original Author: VoiceLessQ
+Original Repository: https://github.com/VoiceLessQ/multi-context-memory
+First Published: 2024
+Project ID: mcpmem-2024-voicelessq
+Fingerprint: 7a8f9b3c-mcpmem-voicelessq-2024
+
+This fingerprint helps identify the original source of this code.
+Any repository claiming to be the "original" without this fingerprint
+and earlier commit history is unauthorized.
+
+================================================================================
+THIRD-PARTY COMPONENTS
+================================================================================
+
+This project uses the following open-source components:
+
+- FastAPI (MIT License)
+- SQLAlchemy (MIT License)
+- ChromaDB (Apache 2.0 License)
+- Redis (BSD License)
+- Sentence-Transformers (Apache 2.0 License)
+- Pydantic (MIT License)
+
+See requirements.txt for complete dependency list.
+
+================================================================================
+REPORTING VIOLATIONS
+================================================================================
+
+If you discover unauthorized use or copyright violations:
+1. Contact: GitHub @VoiceLessQ
+2. Report via: https://github.com/VoiceLessQ/multi-context-memory/issues
+3. Include evidence of the violation
+
+================================================================================

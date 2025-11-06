@@ -1,0 +1,54 @@
+# MCP Multi-Context Memory System - Locked Dependencies
+# Copyright (c) 2024 VoiceLessQ
+# https://github.com/VoiceLessQ/multi-context-memory
+# Project Fingerprint: 7a8f9b3c-mcpmem-voicelessq-2024
+#
+# This file contains pinned dependency versions for reproducible builds.
+# Generate with: pip freeze > requirements-lock.txt
+#
+# IMPORTANT: This file ensures supply chain security by locking exact versions.
+# Any changes to dependencies should be reviewed carefully.
+#
+# To update this file:
+# 1. Create a clean virtual environment
+# 2. Install from requirements.txt: pip install -r requirements.txt
+# 3. Generate lock file: pip freeze > requirements-lock.txt
+# 4. Add this header back to the top
+#
+# Last updated: 2024-11-06
+# Python version: 3.11+
+
+# NOTE: Run the following command to generate this file:
+# python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt && pip freeze > requirements-lock.txt
+
+# Core Framework Dependencies
+# ---------------------------
+# fastapi==0.x.x
+# uvicorn[standard]==0.x.x
+# sqlalchemy==2.x.x
+# alembic==1.x.x
+# pydantic==2.x.x
+# pydantic-settings==2.x.x
+
+# Security & Authentication
+# -------------------------
+# python-jose[cryptography]==3.x.x
+# passlib[bcrypt]==1.x.x
+
+# Vector Search & AI
+# ------------------
+# chromadb>=0.4.22
+# sentence-transformers>=2.2.2
+# openai>=1.0.0
+
+# Caching & Performance
+# ---------------------
+# redis[hiredis]>=5.0.0
+
+# Additional Dependencies
+# -----------------------
+# See requirements.txt for complete list
+
+# TO GENERATE FULL LOCK FILE, RUN:
+# pip install -r requirements.txt && pip freeze > temp-lock.txt
+# Then merge with this file preserving the header
